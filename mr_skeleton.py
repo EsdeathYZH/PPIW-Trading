@@ -3,12 +3,60 @@ import pickle
 import random
 from enum import Enum
 
+import threading
+import time
+
+# Fault Tolerant
+# Master Process create a heart beat threads for each Slave Process
+#   If timeout touched or Slave response nothing,
+#       recreate a Slave Process to redo his job and kill old one.
+# We should also keep a IPC channel for each M/S pair to do heartbeat
+
 class Master:
     def __init__(self, file_list, words_dict, slave_id_list) -> None:
+        self.file_list = file_list
+        self.words_dict = words_dict
+        self.slave_id_list = slave_id_list
+
+        ### For fault tolerance
+        self.heart_beat_threads = {} # {sid: heart_beat_thread}
         pass
 
     def run(self):
+        ### TODO(for ft): start heartbeat tracking once Slaves started
+        self.create_heart_beat()
         pass
+
+    def create_heart_beat(self) -> None:
+        for sid in self.slave_id_list:
+            t = threading.Thread(target=self.ft_thread, args=(sid,))
+            self.heart_beat_threads[sid] = t
+            # TODO: once Slave done its work, Master should kill corresponding heart_beat_thread
+            t.start()
+
+    def ft_thread(self, sid) -> None:
+        # Configure
+        HEARTBEAT_TIMEOUT = 15 # seconds
+
+        # TODO: create a IPC channel with Slave node with id=sid
+        ipc_pipe = None
+
+        lefttime = HEARTBEAT_TIMEOUT
+        while lefttime > 0:
+            time.sleep(1)
+            lefttime -= 1
+            try:
+                r = ipc_send("HB", sid)
+            except:
+                self.do_retry(sid, '''TODO: WORK''')
+                return
+        self.do_retry(sid, '''TODO: WORK''')
+        return
+
+    def do_retry(self, sid):
+        new_slave = Slave(sid, ErrorType(random.randint(0, 2)))
+        new_slave_p = multiprocessing.Process(target=new_slave.run)
+        new_slave_p.start()
 
 class ErrorType(Enum):
     LateStart = 0

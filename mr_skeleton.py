@@ -257,6 +257,9 @@ class Slave:
         # increase map_cnt
         map_cnt = map_cnt + 1
 
+        # send finish msg to master
+        adaptor.send(self.slave_id+1, 0, "finish map")
+
     def reduce_func(self, task_words):
         # define in/out file
         input_files = os.listdir("/map_output")
@@ -300,6 +303,9 @@ class Slave:
 
         # close output
         output_file.close()
+
+        # send finish msg to master
+        adaptor.send(self.slave_id+1, 0, "finish map")
 
 
 if __name__ == '__main__':

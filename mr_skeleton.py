@@ -5,12 +5,57 @@ from enum import Enum
 
 import threading
 import time
+import socket
+import _thread
+import os
 
 # Fault Tolerant
 # Master Process create a heart beat threads for each Slave Process
 #   If timeout touched or Slave response nothing,
 #       recreate a Slave Process to redo his job and kill old one.
 # We should also keep a IPC channel for each M/S pair to do heartbeat
+
+class Adaptor:
+    def __init__(self, num_peer: int) -> None:
+        self.send_sock = {}
+        self.recv_sock = {}
+        self.num_peer = num_peer
+
+        for i in range(num_peer):
+            for j in range(num_peer):
+                socket.setblocking(0)
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                sockfile = "/tmp/{}-{}.sock".format(i,j)
+                if os.path.exists(sockfile):
+                    os.unlink(sockfile)
+                sock.bind(sockfile)
+                sock.listen(0)
+                _thread.start_new_thread(sock.accept())
+
+                if i not in self.send_sock:
+                    self.send_sock[i] = []
+                if j not in self.recv_sock:
+                    self.recv_sock[j] = []
+                self.send_sock[i].append(sock)
+                self.recv_sock[j].append(sock)
+        
+        for i in range(num_peer):
+            for j in range(num_peer):
+                sockfile = "/tmp/{}-{}.sock".format(j,i)
+                _thread.start_new_thread(self.send_sock[i].connect, (sockfile))
+
+
+    def send(self, src: int, dst: int, msg: str) -> int:
+        return self.send_sock[src][dst].send(msg)
+
+    def recv(self, src: int) -> bytes:
+        ret = None
+        for sock in self.recv_sock[src]:
+            ret = sock.recv()
+            if len(ret) > 0:
+                break
+        return ret
+
 
 class Master:
     def __init__(self, file_list, words_dict, slave_id_list) -> None:

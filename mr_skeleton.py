@@ -56,21 +56,96 @@ class Adaptor:
                 break
         return ret
 
-
 class Master:
     def __init__(self, file_list, words_dict, slave_id_list) -> None:
         self.file_list = file_list
         self.words_dict = words_dict
+        self.slave_num = len(slave_id_list)
         self.slave_id_list = slave_id_list
+        self.slave_states = {}
+        for slave_id in slave_id_list:
+            self.slave_states[slave_id] = SlaveStateType.IDLE
+        self.adaptor = Adaptor()
+
+        # divide reduce words
+        self.reduce_tasks = divide_reduce_task(words_dict)
+        self.reduce_idx = 0
+        self.reduce_task_num = len(reduce_tasks)
 
         ### For fault tolerance
         self.heart_beat_threads = {} # {sid: heart_beat_thread}
-        pass
+        
+        self.map_send_t = threading.Thread(target=self.execute_map)
+        map_send_t.start()
+        self.map_recv_t = threading.Thread(target=self.recv_map_res)
+        map_recv_t.start()
+        map_recv_t.wait()
+
+        self.reduce_send_t = threading.Thread(target=self.execute_reduce)
+        reduce_send_t.start()
+        self.reduce_recv_t = threading.Thread(target=self.recv_reduce_res)
+        reduce_recv_t.start()
+        reduce_recv_t.wait()
+
 
     def run(self):
         ### TODO(for ft): start heartbeat tracking once Slaves started
         self.create_heart_beat()
-        pass
+        execute_map()
+        execute_reduce()
+
+    def execute_map():
+        # assign map task to slaves
+        file_idx = 0
+        while True:
+            for slave_id in slave_states.keys():
+                if slave_states[slave_id] == SlaveStateType.IDLE:
+                    assign_map_task(slave_id, file_list[file_idx])
+                    file_idx = file_idx + 1
+                    if file_idx == len(file_list):
+                        return
+
+    def recv_map_res():
+        finish_cnt = 0
+        while True:
+            for slave_id in slave_states.keys():
+                if slave_states[slave_id] == SlaveStateType.RUNNING:
+                    res = adaptor.recv(slave_id)
+                    finish_cnt = finish_cnt + 1
+                    if finish_cnt == len(file_list):
+                        return
+
+    def execute_reduce():
+        # assign reduce task to slaves
+        while True:
+            for slave_id in slave_states.keys():
+                if slave_states[slave_id] == SlaveStateType.IDLE:
+                    assign_reduce_task(slave_id, self.reduce_tasks[self.reduce_idx])
+                    reduce_idx = reduce_idx + 1
+                    if reduce_idx == self.reduce_task_num:
+                        return
+
+    def recv_reduce_res():
+        finish_cnt = 0
+        while True:
+            for slave_id in slave_states.keys():
+                if slave_states[slave_id] == SlaveStateType.RUNNING:
+                    adaptor.recv(slave_id)
+                    finish_cnt = finish_cnt + 1
+                    if finish_cnt == self.reduce_task_num:
+                        return
+
+    def assign_map_task(slave_id, slave_file):
+        task_msg = "M " + slave_file
+        adaptor.send(0, slave_id+1, task_msg)
+        slave_states[slave_id] = SlaveStateType.RUNNING
+
+    def assign_reduce_task(slave_id, task_words):
+        task_msg = "R"
+        for word in task_words:
+            task_msg = task_msg + " " + word
+        self.adaptor.send(0, slave_id+1, task_msg)
+        slave_states[slave_id] = SlaveStateType.RUNNING
 
     def create_heart_beat(self) -> None:
         for sid in self.slave_id_list:
@@ -83,17 +158,16 @@ class Master:
         # Configure
         HEARTBEAT_TIMEOUT = 15 # seconds
 
-        # TODO: create a IPC channel with Slave node with id=sid
-        ipc_pipe = None
-
+        # keep connecting with Slave node
         lefttime = HEARTBEAT_TIMEOUT
         while lefttime > 0:
             time.sleep(1)
             lefttime -= 1
             try:
-                r = ipc_send("HB", sid)
+                r = ft_adaptor.recv(sid+1)
             except:
-                self.do_retry(sid, '''TODO: WORK''')
+                # slave is error
+                self.slave_states[slave_id] = SlaveStateType.ERROR
                 return
         self.do_retry(sid, '''TODO: WORK''')
         return
@@ -115,15 +189,18 @@ class SlaveStateType(Enum):
     ERROR = 2
 
 class Slave:
-    def __init__(self, my_id, control_arg: ErrorType) -> None:
+    def __init__(self, adaptor, my_id, control_arg: ErrorType) -> None:
+        self.adaptor = adaptor
         self.slave_id = my_id
         self.map_cnt = 0
         self.state = SlaveStateType.IDLE
+        self.ft = threading.Thread(target=self.ft_thread)
+        t.start()
 
     def run(self):
         # keep fetching task from master channel
         while(True):
-            task_str = recv()
+            task_str = self.adaptor.recv(0)
             state = SlaveStateType.RUNNING
             task_infos = task_str.split()
             if task_infos[0] == "M":
@@ -137,6 +214,23 @@ class Slave:
                 print("Invalid task format!")
                 assert(false)
             state = SlaveStateType.IDLE
+
+    def ft_thread(self) -> None:
+        # Configure
+        HEARTBEAT_TIMEOUT = 15 # seconds
+
+        # keep sending HB to master
+        lefttime = HEARTBEAT_TIMEOUT
+        while lefttime > 0:
+            time.sleep(1)
+            lefttime -= 1
+            try:
+                r = self.ft_adaptor.send(self.slave_id+1, 0, "HB")
+            except:
+                self.do_retry(sid, '''TODO: WORK''')
+                return
+        self.do_retry(sid, '''TODO: WORK''')
+        return
 
     def map_func(self, input_path):
         # define in/out file
@@ -214,10 +308,15 @@ if __name__ == '__main__':
     with open('req_words.pkl', 'rb') as f:
         words_dict = pickle.load(f)  # {'Slave1': ['a', 'and'], 'Slave2': ['Alice', 'Bob']}
 
+    # create task adaptor
+    adaptor = Adaptor(len(slave_id_list)+1)
+    # create fault-tolerant adaptor
+    ft_adaptor = Adaptor(len(slave_id_list)+1)
+
     # Create a Master
-    m = Master(pending_file_list, words_dict, slave_id_list)
+    m = Master(adaptor, ft_adaptor, pending_file_list, words_dict, slave_id_list)
     # Create some slaves
-    s_list = [Slave(slave_id, ErrorType(random.randint(0, 2))) for slave_id in slave_id_list]
+    s_list = [Slave(adaptor, ft_adaptor, slave_id, ErrorType(random.randint(0, 2))) for slave_id in slave_id_list]
 
     # run in multiprocess
     m_p = multiprocessing.Process(target=m.run)

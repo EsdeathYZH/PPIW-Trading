@@ -16,25 +16,34 @@ class ErrorType(Enum):
     StartbutCrash = 2
     # ....
 
+class SlaveStateType(Enum):
+    RUNNING = 0
+    IDLE = 1
+    ERROR = 2
+
 class Slave:
     def __init__(self, my_id, control_arg: ErrorType) -> None:
         self.slave_id = my_id
         self.map_cnt = 0
+        self.state = SlaveStateType.IDLE
 
     def run(self):
         # keep fetching task from master channel
-        task_str = recv()
-        task_infos = task_str.split()
-        if task_infos[0] == "M":
-            map_func(task_infos[1])
-        else if task_infos[0] == "R":
-            task_words = []
-            for i in range(1, len(task_infos)):
-                task_words.append(task_infos[i])
-            reduce_func(task_words)
-        else:
-            print("Invalid task format!")
-            assert(false)
+        while(True):
+            task_str = recv()
+            state = SlaveStateType.RUNNING
+            task_infos = task_str.split()
+            if task_infos[0] == "M":
+                map_func(task_infos[1])
+            else if task_infos[0] == "R":
+                task_words = []
+                for i in range(1, len(task_infos)):
+                    task_words.append(task_infos[i])
+                reduce_func(task_words)
+            else:
+                print("Invalid task format!")
+                assert(false)
+            state = SlaveStateType.IDLE
 
     def map_func(self, input_path):
         # define in/out file

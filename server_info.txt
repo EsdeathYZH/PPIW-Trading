@@ -12,6 +12,7 @@ password: b57f7b27d0
 
 # ssh command
 `ssh team-7@${ssh address} -p 40724`
+`scp -r -P 40724 team-7@${ssh address}:${remote_dir} ${local_dir}`
 
 # inter-server ip address
 # socket ip

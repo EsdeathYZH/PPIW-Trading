@@ -1,0 +1,21 @@
+# ssh username & password
+user: team-7
+password: b57f7b27d0
+
+# ssh ip address
+139.224.57.153
+106.15.251.133
+106.14.245.225
+106.15.11.226
+
+# ssh port 40724
+
+# ssh command
+`ssh team-7@${ssh address} -p 40724`
+
+# inter-server ip address
+# socket ip
+10.216.68.189
+10.216.68.190
+10.216.68.191
+10.216.68.192

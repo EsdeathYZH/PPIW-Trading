@@ -106,8 +106,6 @@ int load_order_id_from_file(int part) {
         }
     }
 
-    data_read.release();
-
     for (int t = 0; t < num_stock; t++) {
         sort(order_id[t].begin(), order_id[t].end());
     }

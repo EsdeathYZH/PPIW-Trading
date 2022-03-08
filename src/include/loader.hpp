@@ -128,6 +128,8 @@ int load_order_id_from_file(int part) {
         }
     }
 
+    delete[] data_read;
+
     for (int t = 0; t < num_stock; t++) {
         sort(order_id[t].begin(), order_id[t].end());
     }
@@ -144,8 +146,6 @@ int load_order_id_from_file(int part) {
         }
         std::cout << std::endl;
     }
-
-    delete[] data_read;
 
     return 0;
 }

@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
     std::cout << "part_id: " << part_id << std::endl;
     std::cout << "cache_dir: " << cache_dir << std::endl;
 
+    load_prev_close(part_id);
     load_order_id_from_file(part_id);
 
     return 0;

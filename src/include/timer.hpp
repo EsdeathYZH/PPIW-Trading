@@ -1,13 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
 #include <sys/time.h>
-#include <unistd.h>
-#include <stdint.h>
 
 class timer {
-public:
+   public:
     static uint64_t get_usec() {
         struct timespec tp;
         /* POSIX.1-2008: Applications should use the clock_gettime() function

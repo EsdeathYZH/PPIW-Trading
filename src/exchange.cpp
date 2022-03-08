@@ -1,16 +1,17 @@
 #include <algorithm>
+#include <vector>
 
 /* TODO: move to .h */
-struct order {
+struct Order {
     int stk_code;
     int order_id;
     int direction;
     int type;
-    double price;
+    double price; /* only used for type 0 */
     int volume;
 };
 
-struct trade {
+struct Trade {
     int stk_code;
     int bid_id;
     int ask_id;
@@ -18,3 +19,24 @@ struct trade {
     int volume;
 };
 
+class StockDeclarationBook {
+private:
+    std::vector<Order> buy_decls;
+    std::vector<Order> sell_decls;
+public:
+    int insert_buy_decl(Order& order) {
+        return -1;
+    }
+};
+
+class Exchange {
+private:
+
+public:
+    Exchange() {};
+};
+
+int main()
+{
+    return 0;
+}

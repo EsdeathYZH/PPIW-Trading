@@ -20,3 +20,5 @@ target_include_directories(trader PRIVATE src/include)
 
 file(GLOB EXCHANGE_SOURCES "src/exchange.cpp")
 add_executable(exchange ${EXCHANGE_SOURCES})
+target_include_directories(exchange PRIVATE src/include)
+

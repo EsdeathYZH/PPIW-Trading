@@ -39,13 +39,17 @@ struct Record {
 
 struct BuyRecord : public Record {
     bool operator<(BuyRecord& br2) {
-        return price < br2.price;
+        if (price < br2.price)
+            return true;
+        return order_id < br2.order_id;
     };
 };
 
 struct SellRecord : public Record {
     bool operator<(SellRecord& sr2) {
-        return price > sr2.price;
+        if (price > sr2.price)
+            return true;
+        return order_id < sr2.order_id;
     };
 };
 
@@ -228,22 +232,105 @@ public:
                             sr = decl_book.querySellFirst();
                             if (sr == nullptr || sr->price != t_price) {
                                 /* 卖一价格不足交易，将剩余部分以限价形式记录在集中申报簿中 */
-                                BuyRecord new_br;
-                                new_br.price = t_price;
-                                new_br.volume = left_volume;
+                                BuyRecord new_br = {
+                                    order.order_id,
+                                    t_price,
+                                    left_volume};
                                 decl_book.insertBuyDecl(new_br);
 
                                 left_volume -= left_volume;
                             }
                         }
                     }
+                } else if (order.direction == -1) {
+                    /* Sell out */
+                    BuyRecord* br = decl_book.queryBuyFirst();
 
+                    if (br == nullptr)
+                        return -1;
 
+                    double t_price = br->price;
+                    int left_volume = order.volume;
+
+                    while (left_volume) {
+                        if (left_volume < br->volume) {
+                            Trade new_trade;
+                            new_trade.stk_code = stk_code;
+                            new_trade.bid_id = br->order_id;
+                            new_trade.ask_id = order.order_id;
+                            new_trade.price = t_price;
+                            new_trade.volume = left_volume;
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            br->volume -= left_volume;
+                        } else {
+                            Trade new_trade;
+                            new_trade.stk_code = stk_code;
+                            new_trade.bid_id = br->order_id;
+                            new_trade.ask_id = order.order_id;
+                            new_trade.price = t_price;
+                            new_trade.volume = br->volume;
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= br->volume;
+                            decl_book.removeBuyFirst();
+
+                            br = decl_book.queryBuyFirst();
+                            if (br == nullptr || br->price != t_price) {
+                                SellRecord new_sr = {
+                                    order.order_id,
+                                    t_price,
+                                    left_volume};
+                                decl_book.insertSellDecl(new_sr);
+
+                                left_volume -= left_volume;
+                            }
+                        }
+                    }
+                } else {
+                    log("strange order direction: %d\n", order.direction);
                 }
                 break;
             }
-            case 2: {
+            case 2: { /* 本方最优价格申报 */
+                /* 以申报进入交易主机时集中申报簿中本方队列的最优价格为其申报价格。*/
+                if (order.direction == 1) {
+                    /* Buy in */
+                    BuyRecord* br = decl_book.queryBuyFirst();
 
+                    /* 如果本方（买方）队列为空，撤销当前申报 */
+                    if (br == nullptr)
+                        return -1;
+
+                    double t_price = br->price;
+
+                    /**
+                     * NOTE:
+                     * 由于本方第一（买1）都还不能成交，因而该申报会直接进入集中申报簿，不会产生新的交易
+                     */
+                    BuyRecord new_br = {
+                        order.order_id,
+                        t_price,
+                        order.volume};
+                    decl_book.insertBuyDecl(new_br);
+                } else if (order.direction == -1) {
+                    /* Sell out */
+                    SellRecord *sr = decl_book.querySellFirst();
+
+                    if (sr == nullptr)
+                        return -1;
+
+                    double t_price = sr->price;
+
+                    SellRecord new_sr = {
+                        order.order_id,
+                        t_price,
+                        order.volume};
+                    decl_book.insertSellDecl(new_sr);
+                } else {
+                    log("strange order direction: %d\n", order.direction);
+                }
                 break;
             }
             case 3: {

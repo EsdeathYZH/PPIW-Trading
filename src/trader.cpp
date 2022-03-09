@@ -24,7 +24,15 @@ int main(int argc, char *argv[]) {
     std::cout << "part_id: " << part_id << std::endl;
     std::cout << "cache_dir: " << cache_dir << std::endl;
 
-    load_order_id_from_file(part_id);
+    auto price_limits = load_prev_close(part_id);
+    auto [hook, hooked_trade] = load_hook();
+    auto sorted_order = load_order_id_from_file(part_id);
+
+    Coordinates coor;
+    coor.set(1, 1, 1);
+    double single_price = load_single_data_from_file<double>(part_id, price_idx, coor);
+
+    std::cout << "load single number " << single_price << std::endl;
 
     return 0;
 }

@@ -4,6 +4,7 @@
 #include <array>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -170,7 +171,7 @@ vector<vector<SortStruct>> load_order_id_from_file(int part) {
     return order_id;
 }
 
-pair<vector<unordered_map<order_id_t, HookTarget>>, vector<unordered_map<trade_idx_t, volume_t>>> load_hook() {
+pair<vector<unordered_map<order_id_t, HookTarget>>, shared_ptr<vector<unordered_map<trade_idx_t, volume_t>>>> load_hook() {
     const int NX_SUB = 10;
     const int NY_SUB = 100;
     const int NZ_SUB = 4;
@@ -208,7 +209,7 @@ pair<vector<unordered_map<order_id_t, HookTarget>>, vector<unordered_map<trade_i
 
     // using stock id and trade id to locate a trade
     vector<unordered_map<order_id_t, HookTarget>> hook(num_stock, unordered_map<order_id_t, HookTarget>());
-    vector<unordered_map<trade_idx_t, volume_t>> hooked_trade(num_stock, unordered_map<trade_idx_t, volume_t>());
+    auto hooked_trade = make_shared<vector<unordered_map<trade_idx_t, volume_t>>>(num_stock, unordered_map<trade_idx_t, volume_t>());
 
     for (int x = 0; x < NX_SUB; x++) {
         for (int y = 0; y < NY_SUB; y++) {
@@ -219,8 +220,21 @@ pair<vector<unordered_map<order_id_t, HookTarget>>, vector<unordered_map<trade_i
             int arg = data_read[x * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + 3];
 
             hook[stock_id][self_order_id] = {target_stk_code - 1, target_trade_idx, arg};
-            hooked_trade[target_stk_code - 1][target_trade_idx] = -1;
+            (*hooked_trade)[target_stk_code - 1][target_trade_idx] = -1;
         }
+    }
+
+    for (int t = 0; t < num_stock; t++) {
+        for (auto it = hook[t].begin(); it != hook[t].end(); it++) {
+            std::cout << it->first << " ("
+                      << it->second.target_stk_code << ","
+                      << it->second.target_trade_idx << ","
+                      << it->second.arg << ") | ";
+
+            if (distance(hook[t].begin(), it) == 4)
+                break;
+        }
+        std::cout << std::endl;
     }
 
     return make_pair(hook, hooked_trade);
@@ -272,9 +286,35 @@ vector<vector<price_t>> load_prev_close(int part) {
     return price_limits;
 }
 
+void dataset_read(int* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
+    dataset.read(data_read, PredType::NATIVE_INT, memspace, dataspace);
+}
+
+void dataset_read(double* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
+    dataset.read(data_read, PredType::NATIVE_DOUBLE, memspace, dataspace);
+}
+
 template <typename T>
 T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
     T data_read;
+
+    H5File file(get_fname(part, idx), H5F_ACC_RDONLY);
+    DataSet dataset = file.openDataSet(DATASET_NAME[idx]);
+
+    DataSpace dataspace = dataset.getSpace();
+
+    hsize_t offset[3] = {coor.get_x(), coor.get_y(), coor.get_z()};
+    hsize_t count[3] = {1, 1, 1};
+    dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in file, this api can set api
+
+    hsize_t dimsm = 1;
+    DataSpace memspace(1, &dimsm);
+
+    hsize_t offset_out = 0;
+    hsize_t count_out = 1;
+    memspace.selectHyperslab(H5S_SELECT_SET, &count_out, &offset_out);  // select in memory
+
+    dataset_read(&data_read, dataset, memspace, dataspace);
 
     return data_read;
 }

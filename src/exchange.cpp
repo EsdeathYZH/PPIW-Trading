@@ -2,6 +2,7 @@
 #include <vector>
 #include <cassert>
 #include <cstdio>
+#include <iostream>
 
 #define log(fmt, ...) printf("[%s:%d] " fmt, __FILE__, __LINE__, ## __VA_ARGS__)
 
@@ -21,7 +22,7 @@ struct Trade {
     int ask_id; /* seller's order_id */
     double price;
     int volume;
-};
+} __attribute__((packed));
 
 struct Record {
     int order_id;
@@ -87,16 +88,48 @@ private:
     /* 输出：Trade 的序列 */
     std::vector<Trade> trade_list;
 
+    /* helpers */
+    static bool orderGtById(Order& o1, Order& o2) {
+        return o1.order_id > o2.order_id;
+    };
+
 public:
     StockExchange(int stk_code) : stk_code(stk_code), last_commit_order_id(0) {}
 
     int receiveOrder(Order& order) {
+        /* sanity check */
+        assert(order.stk_code == stk_code);
+
+        int ret = 0;
+
         /**
          * 1. push it into `not_ready_orders`
          * 2. pop and handle not_ready_orders until the head is not `last_commit_order_id + 1`
          */
 
-         return -1;
+        /* `not_ready_orders` should maintain as heap */
+        not_ready_orders.push_back(order);
+        std::push_heap(not_ready_orders.begin(), not_ready_orders.end(), orderGtById);
+
+        while (true) {
+            if (not_ready_orders.empty())
+                break;
+            if (last_commit_order_id + 1 != not_ready_orders[0].order_id)
+                break;
+
+            /* Handle single order */
+            ret = commitOrder(not_ready_orders[0]);
+            if (ret != 0) {
+                log("error value: %d\n", ret);
+                break;
+            }
+
+            /* Erase commited order */
+            std::pop_heap(not_ready_orders.begin(), not_ready_orders.end(), orderGtById);
+            not_ready_orders.pop_back();
+        }
+
+        return ret;
     }
 
     int commitOrder(Order& order) {
@@ -162,5 +195,6 @@ public:
 
 int main()
 {
+    std::cout << "sizeof(Trade): " << sizeof(Trade) << std::endl;
     return 0;
 }

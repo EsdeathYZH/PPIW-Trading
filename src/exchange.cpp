@@ -114,6 +114,20 @@ public:
         assert(!sell_decls.empty());
         sell_decls.erase(sell_decls.begin());
     }
+
+    int totalBuyVolume() {
+        int ret = 0;
+        for (auto& br: buy_decls)
+            ret += br.volume;
+        return ret;
+    }
+
+    int totalSellVolume() {
+        int ret = 0;
+        for (auto& sr: sell_decls)
+            ret += sr.volume;
+        return ret;
+    }
 };
 
 class StockExchange {
@@ -423,13 +437,178 @@ public:
                 }
                 break;
             }
-            case 4: {
+            case 4: { /* 即时成交剩余撤销申报 */
+                /* 匹配对手方所有申报并交易，如果对手方交易空，则撤销剩余 */
+                int left_volume = order.volume;
+                if (order.direction == 1) {
+                    /* Buy in */
+                    while (true) {
+                        if (left_volume == 0)
+                            break;
+                        SellRecord *sr = decl_book.querySellFirst();
+                        if (sr == nullptr)
+                            break;
 
+                        if (left_volume < sr->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            sr->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     sr->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= sr->volume;
+                            decl_book.removeSellFirst();
+                        }
+                    }
+                    if (left_volume) {
+                        ex_debug("Type4: left_volume=%d\n", left_volume);
+                        return left_volume; /* partial reject */
+                    }
+                } else if (order.direction == -1) {
+                    /* Sell out */
+                    while (true) {
+                        if (left_volume == 0)
+                            break;
+                        BuyRecord *br = decl_book.queryBuyFirst();
+                        if (br == nullptr)
+                            break;
+
+                        if (left_volume < br->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            br->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     br->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= br->volume;
+                            decl_book.removeBuyFirst();
+                        }
+                    }
+                    if (left_volume) {
+                        ex_debug("Type4: left_volume=%d\n", left_volume);
+                        return left_volume; /* partial reject */
+                    }
+                } else {
+                    log("strange order direction: %d\n", order.direction);
+                }
                 break;
             }
-            case 5: {
+            case 5: { /* 全额成交或撤销申报 */
+                /* 与 4 类似，但是如果一旦不能全额成交，则整个撤回 */
 
+                int left_volume = order.volume;
+                if (order.direction == 1) {
+                    /* Buy in */
+
+                    /* 如果当前申报的总量大于了集中申报簿中对手方的总量，撤回 */
+                    if (left_volume > decl_book.totalSellVolume())
+                        return -1;
+
+                    while (left_volume) {
+                        /* 保证可以清零 left_volume */
+                        SellRecord *sr = decl_book.querySellFirst();
+                        assert(sr);
+
+                        if (left_volume < sr->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            sr->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     sr->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= sr->volume;
+                            decl_book.removeSellFirst();
+                        }
+                    }
+
+                } else if (order.direction == -1) {
+                    /* Sell out */
+                    if (left_volume > decl_book.totalBuyVolume())
+                        return -1;
+
+                    while (left_volume) {
+                        BuyRecord *br = decl_book.queryBuyFirst();
+                        assert(br);
+
+                        if (left_volume < br->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            br->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     br->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= br->volume;
+                            decl_book.removeBuyFirst();
+                        }
+                    }
+                } else {
+                    log("strange order direction: %d\n", order.direction);
+                }
                 break;
+            }
+            default: {
+                log("exchange type: %d\n", order.type);
+                return -1;
             }
         }
 

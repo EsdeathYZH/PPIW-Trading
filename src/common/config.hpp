@@ -20,7 +20,7 @@ public:
     // another choice
     // e.g., static int &num_threads() { static int _num_threads = 2; return _num_threads; }
 
-    static std::string input_folder __attribute__((weak));
+    static std::string data_folder __attribute__((weak));
 
     static int data_port_base __attribute__((weak));
     static int ctrl_port_base __attribute__((weak));
@@ -31,7 +31,7 @@ public:
 
 // config init
 
-std::string Config::input_folder;
+std::string Config::data_folder;
 
 int Config::data_port_base = 5500;
 int Config::ctrl_port_base = 9576;
@@ -41,19 +41,19 @@ int Config::sliding_window_size = 100;
 
 static bool set_immutable_config(std::string cfg_name, std::string value)
 {
-    if (cfg_name == "input_folder") {
-        Config::input_folder = value;
+    if (cfg_name == "data_folder") {
+        Config::data_folder = value;
 
-        // make sure to check that the Config::input_folder is non-empty.
-        if (Config::input_folder.length() == 0) {
+        // make sure to check that the Config::data_folder is non-empty.
+        if (Config::data_folder.length() == 0) {
             logstream(LOG_ERROR) << "the directory path of RDF data can not be empty!"
-                                 << "You should set \"input_folder\" in config file." << LOG_endl;
+                                 << "You should set \"data_folder\" in config file." << LOG_endl;
             exit(-1);
         }
 
-        // force a "/" at the end of Config::input_folder.
-        if (Config::input_folder[Config::input_folder.length() - 1] != '/')
-            Config::input_folder = Config::input_folder + "/";
+        // force a "/" at the end of Config::data_folder.
+        if (Config::data_folder[Config::data_folder.length() - 1] != '/')
+            Config::data_folder = Config::data_folder + "/";
     } else if (cfg_name == "data_port_base") {
         Config::data_port_base = atoi(value.c_str());
         ASSERT(Config::data_port_base > 0);
@@ -155,7 +155,7 @@ static void print_config(void)
     std::cout << "------ configurations ------" << LOG_endl;
 
     // setting by config file
-    std::cout << "input_folder: "          << Config::input_folder          << LOG_endl;
+    std::cout << "data_folder: "          << Config::data_folder          << LOG_endl;
     std::cout << "data_port_base: "        << Config::data_port_base        << LOG_endl;
     std::cout << "ctrl_port_base: "        << Config::ctrl_port_base        << LOG_endl;
     std::cout << "server_port_base: "      << Config::server_port_base      << LOG_endl;

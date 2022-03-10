@@ -82,6 +82,104 @@ public:
         switch (order.type) {
             case 0: {
                 /* TODO: 限价申报 */
+                int left_volume = order.volume;
+                if (order.direction == 1) {
+                    /* Buy in */
+                    /* 依次匹配申报簿卖方的序列，直到卖一无法与当前申报成交 */
+                    while (true) {
+                        if (left_volume == 0)
+                            break;
+                        SellRecord *sr = decl_book.querySellFirst();
+                        if (sr == nullptr)
+                            break;
+                        if (sr->price > order.price)
+                            break;
+
+                        if (left_volume < sr->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            sr->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     order.order_id,
+                                ask_id:     sr->order_id,
+                                price:      sr->price,
+                                volume:     sr->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= sr->volume,
+                            decl_book.removeSellFirst();
+                        }
+                    }
+
+                    if (left_volume != 0) {
+                        BuyRecord new_br = {
+                            order_id:   order.order_id,
+                            price:      order.price,
+                            volume:     left_volume
+                        };
+                        decl_book.insertBuyDecl(new_br);
+                    }
+                } else if (direction == -1) {
+                    /* Sell out */
+                    /* 类似的，依次和买一成交 */
+                    while (true) {
+                        if (left_volume == 0)
+                            break;
+                        BuyRecord *br = decl_book.queryBuyFirst();
+                        if (br == nullptr)
+                            break;
+                        if (br->price < order.price)
+                            break;
+
+                        if (left_volume < br->volume) {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     left_volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= left_volume;
+                            br->volume -= left_volume;
+                        } else {
+                            Trade new_trade = {
+                                stk_code:   stk_code,
+                                bid_id:     br->order_id,
+                                ask_id:     order.order_id,
+                                price:      br->price,
+                                volume:     br->volume
+                            };
+                            trade_list.push_back(new_trade);
+
+                            left_volume -= br->volume;
+                            decl_book.removeSellFirst();
+                        }
+                    }
+
+                    if (left_volume != 0) {
+                        SellRecord new_sr = {
+                            order_id:   order.order_id,
+                            price:      order.price,
+                            volume:     left_volume
+                        };
+                        decl_book.insertSellDecl(new_sr);
+                    }
+                } else {
+                    log("strange order direction: %d\n", order.direction);
+                }
                 break;
             }
             case 1: { /* 对手方最优价格申报 */

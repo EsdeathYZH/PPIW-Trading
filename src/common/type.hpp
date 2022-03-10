@@ -11,16 +11,20 @@ using trade_idx_t = int;
 
 // stk_code, order id and trade index start at 1...
 
-struct order {
+struct Order {
     int stk_code;
     int order_id;
     int direction;
     int type;
     double price;
     int volume;
+
+    void print() const {
+        std::cout << "(" << stk_code << "," << order_id << "," << direction << "," << type << "," << price << "," << volume << ")";
+    }
 };
 
-struct trade {
+struct Trade {
     int stk_code;
     int bid_id;
     int ask_id;
@@ -32,15 +36,15 @@ class Coordinates {
    public:
     uint32_t coordinates;
 
-    int get_x() {
+    int get_x() const {
         return (coordinates >> 20) & 0x3ff;
     }
 
-    int get_y() {
+    int get_y() const {
         return (coordinates >> 10) & 0x3ff;
     }
 
-    int get_z() {
+    int get_z() const {
         return coordinates & 0x3ff;
     }
 

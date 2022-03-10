@@ -124,13 +124,13 @@ public:
 
                     if (left_volume != 0) {
                         BuyRecord new_br = {
-                            order_id:   order.order_id,
-                            price:      order.price,
-                            volume:     left_volume
+                            order.order_id,
+                            order.price,
+                            left_volume
                         };
                         decl_book.insertBuyDecl(new_br);
                     }
-                } else if (direction == -1) {
+                } else if (order.direction == -1) {
                     /* Sell out */
                     /* 类似的，依次和买一成交 */
                     while (true) {
@@ -171,9 +171,9 @@ public:
 
                     if (left_volume != 0) {
                         SellRecord new_sr = {
-                            order_id:   order.order_id,
-                            price:      order.price,
-                            volume:     left_volume
+                            order.order_id,
+                            order.price,
+                            left_volume
                         };
                         decl_book.insertSellDecl(new_sr);
                     }

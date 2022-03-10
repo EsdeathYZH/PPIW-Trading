@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -10,8 +11,9 @@
 #include <vector>
 
 #include "H5Cpp.h"
-#include "utils/timer.hpp"
 #include "common/type.hpp"
+#include "utils/assertion.hpp"
+#include "utils/timer.hpp"
 
 using namespace std;
 using namespace H5;
@@ -61,86 +63,70 @@ const string cache_dir = "/data/team-7/";
 
 const int num_stock = 10;
 
-// template<typename T>
-// unique_ptr<T> load_matrix_from_file(H5std_string fname, H5std_string dataset, int rank, hsize_t* offset, hsize_t* count) {
-//     int num_data = 1;
-//     for (int i = 0; i < rank; i++) {
-//         num_data *= count[i];
-//     }
+void dataset_read(int* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
+    dataset.read(data_read, PredType::NATIVE_INT, memspace, dataspace);
+}
 
-//     auto data_read = make_unique<T[]>(num_data);
-//     memset(data_read.get(), 0, sizeof(T) * num_data);
-//     H5File file(fname, H5F_ACC_RDONLY);
-//     DataSet dataset = file.openDataSet(dataset);
+void dataset_read(double* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
+    dataset.read(data_read, PredType::NATIVE_DOUBLE, memspace, dataspace);
+}
 
-//     DataSpace dataspace = dataset.getSpace();
-//     int rank = dataspace.getSimpleExtentNdims();
+// load_matrix_from_file<int> -> shared_ptr<int[]>
+// load_matrix_from_file<double> -> shared_ptr<double[]>
+template <typename T>
+shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_string dataset_name, const int rank, const hsize_t* count, const hsize_t* offset) {
+    int num_data = 1;
+    for (int i = 0; i < rank; i++) {
+        num_data *= count[i];
+    }
 
-//     auto dims_out = make_unique<hsize_t[]>(rank);
-//     dataspace.getSimpleExtentDims(dims_out, NULL);
+    auto data_read = make_shared<T[]>(num_data);
+    memset(data_read.get(), 0, sizeof(T) * num_data);
+    H5File file(fname, H5F_ACC_RDONLY);
+    DataSet dataset = file.openDataSet(dataset_name);
 
-//     std::cout << fname.c_str() << ": " << dataset.c_str() << " rank: " << rank << " shape: (";
-//     for (int i = 0; i < rank; i++) {
-//         std::cout << dims_out[i];
-//         if (i == rank-1)
-//             std::cout << ")\n";
-//         else
-//             std::cout << ", ";
-//     }
+    DataSpace dataspace = dataset.getSpace();
+    int dataset_rank = dataspace.getSimpleExtentNdims();
+    assert(dataset_rank == rank);
 
-//     dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in file, this api can set api
+    auto dims_out = make_unique<hsize_t[]>(rank);
+    dataspace.getSimpleExtentDims(dims_out.get(), NULL);
 
-//     DataSpace memspace(rank, count);
+    std::cout << fname.c_str() << ": " << dataset_name.c_str() << " rank: " << rank << " shape: (";
+    for (int i = 0; i < rank; i++) {
+        std::cout << dims_out[i];
+        if (i == rank - 1)
+            std::cout << ")\n";
+        else
+            std::cout << ", ";
+    }
 
-//     memspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in memory
+    dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in file, this api can set api
 
-//     uint64_t start = timer::get_usec();
-//     dataset.read(data_read.get(), PredType::NATIVE_INT?, memspace, dataspace);
-//     // read from file to memory, you can set offset in memory space
-//     uint64_t end = timer::get_usec();
-//     std::cout << "Load order_id" << part << " finish in " << (end - start) / 1000 / 1000 << " sec" << std::endl;
+    DataSpace memspace(rank, count);
+    memspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in memory
 
-//     return data_read;
-// }
+    uint64_t start = timer::get_usec();
+    dataset_read(data_read.get(), dataset, memspace, dataspace);
+    // read from file to memory, you can set offset in memory space
+    uint64_t end = timer::get_usec();
+    std::cout << "Load " << fname << " " << dataset_name << " " << num_data << " finish in " << (end - start) / 1000 << " msec" << std::endl;
+
+    return data_read;
+}
 
 vector<vector<SortStruct>> load_order_id_from_file(int part) {
     // read a 500x1000x1000 matrix
     const int NX_SUB = 500;
     const int NY_SUB = 1000;
     const int NZ_SUB = 1000;
-    const int RANK_OUT = 3;
-
-    auto data_read = make_unique<order_id_t[]>(NX_SUB * NY_SUB * NZ_SUB);
-    memset(data_read.get(), 0, sizeof(order_id_t) * NX_SUB * NY_SUB * NZ_SUB);
-    H5File file(get_fname(part, order_id_idx), H5F_ACC_RDONLY);
-    DataSet dataset = file.openDataSet(DATASET_NAME[order_id_idx]);
-
-    DataSpace dataspace = dataset.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-
-    hsize_t dims_out[3];
-    dataspace.getSimpleExtentDims(dims_out, NULL);
-
-    printf("order_id%d rank %d, shape (%llu, %llu, %llu)\n", part, rank, dims_out[0], dims_out[1], dims_out[2]);
+    const int RANK = 3;
 
     hsize_t offset[3] = {0, 0, 0};
     hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in file, this api can set api
-
-    hsize_t dimsm[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    DataSpace memspace(RANK_OUT, dimsm);
-
-    hsize_t offset_out[3] = {0, 0, 0};
-    hsize_t count_out[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    memspace.selectHyperslab(H5S_SELECT_SET, count_out, offset_out);  // select in memory
+    auto data_read = load_matrix_from_file<order_id_t>(get_fname(part, order_id_idx), DATASET_NAME[order_id_idx], RANK, count, offset);
 
     uint64_t start = timer::get_usec();
-    dataset.read(data_read.get(), PredType::NATIVE_INT, memspace, dataspace);
-    // read from file to memory, you can set offset in memory space
-    uint64_t end = timer::get_usec();
-    std::cout << "Load order_id" << part << " finish in " << (end - start) / 1000 / 1000 << " sec" << std::endl;
-
-    start = timer::get_usec();
     vector<vector<SortStruct>> order_id(num_stock, vector<SortStruct>(NX_SUB * NY_SUB * NZ_SUB / num_stock));
     for (int x = 0; x < NX_SUB; x++) {
         for (int y = 0; y < NY_SUB; y++) {
@@ -155,7 +141,7 @@ vector<vector<SortStruct>> load_order_id_from_file(int part) {
         sort(order_id[t].begin(), order_id[t].end());
     }
 
-    end = timer::get_usec();
+    uint64_t end = timer::get_usec();
     std::cout << "Sort order_id" << part << " finish in " << (end - start) / 1000 / 1000 << " sec" << std::endl;
 
     for (int t = 0; t < num_stock; t++) {
@@ -177,35 +163,9 @@ pair<vector<unordered_map<order_id_t, HookTarget>>, shared_ptr<vector<unordered_
     const int NZ_SUB = 4;
     const int RANK_OUT = 3;
 
-    auto data_read = make_unique<int[]>(NX_SUB * NY_SUB * NZ_SUB);
-    memset(data_read.get(), 0, sizeof(int) * NX_SUB * NY_SUB * NZ_SUB);
-    H5File file(hook_fname, H5F_ACC_RDONLY);
-    DataSet dataset = file.openDataSet(HOOK_DATASET);
-
-    DataSpace dataspace = dataset.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-
-    hsize_t dims_out[3];
-    dataspace.getSimpleExtentDims(dims_out, NULL);
-
-    printf("hook rank %d, shape (%llu, %llu, %llu)\n", rank, dims_out[0], dims_out[1], dims_out[2]);
-
     hsize_t offset[3] = {0, 0, 0};
     hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);  // select in file, this api can set api
-
-    hsize_t dimsm[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    DataSpace memspace(RANK_OUT, dimsm);
-
-    hsize_t offset_out[3] = {0, 0, 0};
-    hsize_t count_out[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    memspace.selectHyperslab(H5S_SELECT_SET, count_out, offset_out);  // select in memory
-
-    uint64_t start = timer::get_usec();
-    dataset.read(data_read.get(), PredType::NATIVE_INT, memspace, dataspace);
-    // read from file to memory, you can set offset in memory space
-    uint64_t end = timer::get_usec();
-    std::cout << "Load hook finish in " << (end - start) << " usec" << std::endl;
+    auto data_read = load_matrix_from_file<int>(hook_fname, HOOK_DATASET, RANK_OUT, count, offset);
 
     // using stock id and trade id to locate a trade
     vector<unordered_map<order_id_t, HookTarget>> hook(num_stock, unordered_map<order_id_t, HookTarget>());
@@ -241,36 +201,10 @@ pair<vector<unordered_map<order_id_t, HookTarget>>, shared_ptr<vector<unordered_
 }
 
 vector<vector<price_t>> load_prev_close(int part) {
-    auto data_read = make_unique<price_t[]>(num_stock);
-    memset(data_read.get(), 0, sizeof(price_t) * num_stock);
-    H5File file(get_fname(part, price_idx), H5F_ACC_RDONLY);
-    DataSet dataset = file.openDataSet(PREV_CLOSE_DATASET);
-
-    DataSpace dataspace = dataset.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-
-    hsize_t dims_out;
-    dataspace.getSimpleExtentDims(&dims_out, NULL);
-
-    printf("prev_close rank %d, shape (%llu)\n", rank, dims_out);
-
     hsize_t offset = 0;
     hsize_t count = num_stock;
-    dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset);  // select in file, this api can set api
 
-    hsize_t dimsm = num_stock;
-    DataSpace memspace(rank, &dimsm);
-
-    hsize_t offset_out = 0;
-    hsize_t count_out = num_stock;
-    memspace.selectHyperslab(H5S_SELECT_SET, &count_out, &offset_out);  // select in memory
-
-    uint64_t start = timer::get_usec();
-    dataset.read(data_read.get(), PredType::NATIVE_DOUBLE, memspace, dataspace);
-    // read from file to memory, you can set offset in memory space
-    uint64_t end = timer::get_usec();
-    std::cout << "Load prev_price"
-              << " finish in " << (end - start) << " usec" << std::endl;
+    auto data_read = load_matrix_from_file<price_t>(get_fname(part, price_idx), PREV_CLOSE_DATASET, 1, &count, &offset);
 
     vector<vector<price_t>> price_limits(2, vector<price_t>(10));
     for (int t = 0; t < num_stock; t++) {
@@ -284,14 +218,6 @@ vector<vector<price_t>> load_prev_close(int part) {
     }
 
     return price_limits;
-}
-
-void dataset_read(int* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
-    dataset.read(data_read, PredType::NATIVE_INT, memspace, dataspace);
-}
-
-void dataset_read(double* data_read, const DataSet& dataset, const DataSpace& memspace, const DataSpace& dataspace) {
-    dataset.read(data_read, PredType::NATIVE_DOUBLE, memspace, dataspace);
 }
 
 template <typename T>

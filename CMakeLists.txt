@@ -12,7 +12,6 @@ add_definitions(-std=c++17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fopenmp -Wall")
 
 ## Set include paths
-include_directories(deps/boost_1_67_0-install/include)
 include_directories(src)
 
 ## Source code

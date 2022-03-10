@@ -21,13 +21,14 @@ namespace ubiquant {
 
 class MessageSender {
 private:
+    std::string addr;
     std::vector<int> ports;
     std::unordered_map<int, zmq::socket_t*> senders;
     zmq::context_t context;
 
 public:
     MessageSender(std::string receiver_addr, std::vector<int> receiver_ports) 
-        : context(1), ports(receiver_ports) {
+        : context(1), addr(receiver_addr), ports(receiver_ports) {
         // set send socket
         for(auto port : receiver_ports) {
             // new socket on-demand
@@ -53,7 +54,7 @@ public:
         int result = senders[ports[0]]->send(msg, ZMQ_DONTWAIT);
         if (result < 0) {
             logstream(LOG_ERROR) << "failed to send msg to ["
-                                 << dst_sid << ", " << dst_tid << "] "
+                                 << addr << ":" << ports[0] << "] "
                                  << strerror(errno) << LOG_endl;
         }
 

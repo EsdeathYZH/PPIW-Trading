@@ -11,14 +11,14 @@ add_definitions(-std=c++17)
 ## Set dependencies
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fopenmp -Wall")
 
+## Set include paths
+include_directories(deps/boost_1_67_0-install/include)
+include_directories(src)
+
 ## Source code
 file(GLOB SOURCES "src/trader.cpp")
 add_executable(trader ${SOURCES})
 
-## Set include paths
-target_include_directories(trader PRIVATE src/include)
-
 file(GLOB EXCHANGE_SOURCES "src/exchange.cpp")
 add_executable(exchange ${EXCHANGE_SOURCES})
-target_include_directories(exchange PRIVATE src/include)
 

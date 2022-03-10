@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type.hpp"
+#include "common/type.hpp"
 #include "stock_decl_book.hpp"
 #include "record.hpp"
 #include "debug.hpp"

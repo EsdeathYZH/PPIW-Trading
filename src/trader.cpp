@@ -2,8 +2,8 @@
 #include <iostream>
 #include <string>
 
-#include "loader.hpp"
-#include "timer.hpp"
+#include "common/loader.hpp"
+#include "utils/timer.hpp"
 
 int main(int argc, char *argv[]) {
     int part_id;

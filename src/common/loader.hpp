@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "H5Cpp.h"
-#include "timer.hpp"
-#include "type.hpp"
+#include "utils/timer.hpp"
+#include "common/type.hpp"
 
 using namespace std;
 using namespace H5;

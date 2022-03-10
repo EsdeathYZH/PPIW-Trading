@@ -1,0 +1,16 @@
+
+*~
+*.exe
+*.swp
+*.output
+build/
+deps/*/
+.vs/
+.vscode/*.json
+.git/
+.settings/
+.cproject
+.project
+
+# personal script
+push.sh

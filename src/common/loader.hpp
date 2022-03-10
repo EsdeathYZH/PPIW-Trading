@@ -27,8 +27,8 @@ enum matrix_idx {
     num_matrix
 };
 
-const string h5_prefix = "/data/100x1000x1000/";
-const string hook_fname = h5_prefix + "hook.h5";
+const H5std_string h5_prefix = "/data/100x1000x1000/";
+const H5std_string hook_fname = h5_prefix + "hook.h5";
 
 const vector<vector<H5std_string>> FILE_NAME = {
     {h5_prefix + "order_id1.h5",
@@ -43,7 +43,7 @@ const vector<vector<H5std_string>> FILE_NAME = {
      h5_prefix + "volume2.h5"}};
 
 // part should be 1 or 2
-inline string get_fname(int part, matrix_idx idx) {
+inline H5std_string get_fname(int part, matrix_idx idx) {
     return FILE_NAME[part - 1][idx];
 }
 
@@ -131,8 +131,8 @@ vector<vector<SortStruct>> load_order_id_from_file(int part) {
     for (int x = 0; x < NX_SUB; x++) {
         for (int y = 0; y < NY_SUB; y++) {
             for (int z = 0; z < NZ_SUB; z++) {
-                order_id[x % 10][(x / 10) * (1000 * 1000) + y * 1000 + z].order_id = data_read[x * (1000 * 1000) + y * 1000 + z];
-                order_id[x % 10][(x / 10) * (1000 * 1000) + y * 1000 + z].coor.set(x, y, z);
+                order_id[x % num_stock][(x / num_stock) * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z].order_id = data_read[x * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z];
+                order_id[x % num_stock][(x / num_stock) * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z].coor.set(x, y, z);
             }
         }
     }
@@ -244,3 +244,26 @@ T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
 
     return data_read;
 }
+
+class OrderInfoMatrix {
+   public:
+    shared_ptr<direction_t[]> direction_matrix;
+    shared_ptr<type_t[]> type_matrix;
+    shared_ptr<price_t[]> price_matrix;
+    shared_ptr<volume_t[]> volume_matrix;
+
+    Order generate_order(const stock_code_t stock_code, const SortStruct ss, const int nx, const int ny, const int nz) const {
+        int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_y();
+        assert((0 <= x && x < nx) && (0 <= y && y < ny) && (0 <= z && z < nz));
+        assert(stock_code == x % num_stock + 1);
+        Order order;
+        order.stk_code = stock_code;
+        order.order_id = ss.order_id;
+        order.direction = direction_matrix[x * (ny * nz) + y * (nz) + z];
+        order.type = type_matrix[x * (ny * nz) + y * (nz) + z];
+        order.price = price_matrix[x * (ny * nz) + y * (nz) + z];
+        order.volume = volume_matrix[x * (ny * nz) + y * (nz) + z];
+
+        return order;
+    }
+};

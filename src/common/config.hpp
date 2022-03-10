@@ -10,8 +10,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "logger2.hpp"
-#include "assertion.hpp"
+#include "utils/logger2.hpp"
+#include "utils/assertion.hpp"
 
 namespace ubiquant {
 

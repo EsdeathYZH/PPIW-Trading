@@ -8,7 +8,8 @@
 
 #include "status.hpp"
 
-#include "utils/config.hpp"
+#include "common/config.hpp"
+
 #include "utils/logger2.hpp"
 
 namespace ubiquant {

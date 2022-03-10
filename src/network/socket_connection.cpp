@@ -75,7 +75,7 @@ bool SocketConnection::process_message(MSG_CODE code, const std::string& message
 
 void SocketConnection::do_write(const std::string& buf) {
     std::string to_send;
-    uint32_t length = buf.size();
+    size_t length = buf.size();
     to_send.resize(length + sizeof(uint32_t));
     char* ptr = &to_send[0];
     memcpy(ptr, &length, sizeof(size_t));

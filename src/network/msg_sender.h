@@ -21,10 +21,10 @@ namespace ubiquant {
 
 class MessageSender {
 private:
+    zmq::context_t context;
     std::string addr;
     std::vector<int> ports;
     std::unordered_map<int, zmq::socket_t*> senders;
-    zmq::context_t context;
 
 public:
     MessageSender(std::string receiver_addr, std::vector<int> receiver_ports) 

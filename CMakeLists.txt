@@ -3,7 +3,7 @@ set(CMAKE_CXX_COMPILER h5c++)
 project (trader)
 
 ## CMake version
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 ## Use C++17 features
 add_definitions(-std=c++17)

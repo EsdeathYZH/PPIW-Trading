@@ -50,9 +50,9 @@ struct UbiquantException : public std::exception {
 
    public:
     /// Constructor
-    UbiquantException(const int status_code) : status_code(status_code) {}
+    UbiquantException(const int status_code) : status_code(status_code), message(nullptr) {}
     UbiquantException(const char *message)
-        : message(message), status_code(UNKNOWN_ERROR) {}
+        : status_code(UNKNOWN_ERROR), message(message) {}
 
     const char *what() const throw() { return ERR_MSG(status_code); }
 

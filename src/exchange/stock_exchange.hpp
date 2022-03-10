@@ -5,9 +5,6 @@
 #include "record.hpp"
 #include "debug.hpp"
 
-#define Order order
-#define Trade trade
-
 class StockExchange {
 /**
  * @brief 单只股票的 exchange 处理

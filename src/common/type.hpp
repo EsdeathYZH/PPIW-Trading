@@ -87,7 +87,7 @@ class OrderInfoMatrix {
     std::shared_ptr<volume_t[]> volume_matrix;
 
     Order generate_order(const stock_code_t stock_code, const SortStruct ss, const int nx, const int ny, const int nz) const {
-        int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_y();
+        int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_z();
         assert((0 <= x && x < nx) && (0 <= y && y < ny) && (0 <= z && z < nz));
         assert(stock_code == x % num_stock + 1);
         Order order;

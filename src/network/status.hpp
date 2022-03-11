@@ -9,7 +9,7 @@
 
 namespace ubiquant {
 
-enum MSG_CODE : uint32_t { INFO_RPC = 0, SPARQL_RPC = 1, STRING_RPC = 2, EXIT_RPC = 3 };
+enum MSG_CODE : uint32_t { INFO_RPC = 0, EXIT_RPC = 1 };
 
 enum StatusCode : unsigned char {
   kOK = 0,

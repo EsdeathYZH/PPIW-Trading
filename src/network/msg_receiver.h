@@ -22,10 +22,9 @@ namespace ubiquant {
 
 class MessageReceiver {
 private:
+    zmq::context_t context;
     std::vector<int> ports;
     std::unordered_map<int, zmq::socket_t*> receivers;     // static allocation
-
-    zmq::context_t context;
 
 public:
     MessageReceiver(std::vector<int> receiver_ports)
@@ -47,7 +46,7 @@ public:
     std::string recv() {
         zmq::message_t msg;
 
-        if (receivers[ports[0]]->recv(&msg) < 0) {
+        if (!receivers[ports[0]]->recv(&msg)) {
             logstream(LOG_ERROR) << "failed to recv msg ("
                                  << strerror(errno) << ")" << LOG_endl;
             assert(false);

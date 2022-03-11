@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <memory>
+#include <cstdio>
 
 using stock_code_t = int;
 using order_id_t = int;
@@ -20,7 +22,13 @@ struct Order {
     int volume;
 
     void print() const {
-        std::cout << "(" << stk_code << "," << order_id << "," << direction << "," << type << "," << price << "," << volume << ")";
+        printf("[%d] order_id: %d\tdirection: %d\ttype: %d\tprice: %.2f\t, volume: %d\n",
+                stk_code,
+                order_id,
+                direction,
+                type,
+                price,
+                volume);
     }
 };
 
@@ -69,4 +77,27 @@ struct HookTarget {
     int target_stk_code;
     int target_trade_idx;
     int arg;
+};
+
+class OrderInfoMatrix {
+   public:
+    std::shared_ptr<direction_t[]> direction_matrix;
+    std::shared_ptr<type_t[]> type_matrix;
+    std::shared_ptr<price_t[]> price_matrix;
+    std::shared_ptr<volume_t[]> volume_matrix;
+
+    Order generate_order(const stock_code_t stock_code, const SortStruct ss, const int nx, const int ny, const int nz) const {
+        int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_z();
+        assert((0 <= x && x < nx) && (0 <= y && y < ny) && (0 <= z && z < nz));
+        assert(stock_code == x % num_stock + 1);
+        Order order;
+        order.stk_code = stock_code;
+        order.order_id = ss.order_id;
+        order.direction = direction_matrix[x * (ny * nz) + y * (nz) + z];
+        order.type = type_matrix[x * (ny * nz) + y * (nz) + z];
+        order.price = price_matrix[x * (ny * nz) + y * (nz) + z];
+        order.volume = volume_matrix[x * (ny * nz) + y * (nz) + z];
+
+        return order;
+    }
 };

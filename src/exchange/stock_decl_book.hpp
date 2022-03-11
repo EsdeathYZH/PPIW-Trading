@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include <algorithm>
+
 #include "debug.hpp"
 #include "record.hpp"
 
@@ -18,17 +21,27 @@ private:
     std::vector<BuyRecord> buy_decls;
     std::vector<SellRecord> sell_decls;
 public:
-    StockDeclarationBook () {};
+    StockDeclarationBook () {
+        buy_decls.reserve(0x2000);
+        sell_decls.reserve(0x2000);
+    };
+
+    void print() {
+        std::cout << "BuyDecls:" << std::endl;
+        printRecordList(buy_decls);
+        std::cout << "SellDecls:" << std::endl;
+        printRecordList(sell_decls);
+    }
 
     int insertBuyDecl(BuyRecord& br) {
         buy_decls.push_back(br);
-        sort(buy_decls.begin(), buy_decls.end());
+        std::push_heap(buy_decls.begin(), buy_decls.end());
         return 0;
     }
 
     int insertSellDecl(SellRecord& sr) {
         sell_decls.push_back(sr);
-        sort(sell_decls.begin(), sell_decls.end());
+        std::push_heap(sell_decls.begin(), sell_decls.end());
         return 0;
     }
 
@@ -40,7 +53,8 @@ public:
 
     void removeBuyFirst() {
         assert(!buy_decls.empty());
-        buy_decls.erase(buy_decls.begin());
+        std::pop_heap(buy_decls.begin(), buy_decls.end());
+        buy_decls.pop_back();
     }
 
     SellRecord* querySellFirst() {
@@ -51,7 +65,8 @@ public:
 
     void removeSellFirst() {
         assert(!sell_decls.empty());
-        sell_decls.erase(sell_decls.begin());
+        std::pop_heap(sell_decls.begin(), sell_decls.end());
+        sell_decls.pop_back();
     }
 
     int totalBuyVolume() {

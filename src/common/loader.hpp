@@ -27,8 +27,8 @@ enum matrix_idx {
     num_matrix
 };
 
-const string h5_prefix = "/data/100x1000x1000/";
-const string hook_fname = h5_prefix + "hook.h5";
+const H5std_string h5_prefix = "/data/100x1000x1000/";
+const H5std_string hook_fname = h5_prefix + "hook.h5";
 
 const vector<vector<H5std_string>> FILE_NAME = {
     {h5_prefix + "order_id1.h5",
@@ -43,7 +43,7 @@ const vector<vector<H5std_string>> FILE_NAME = {
      h5_prefix + "volume2.h5"}};
 
 // part should be 1 or 2
-inline string get_fname(int part, matrix_idx idx) {
+inline H5std_string get_fname(int part, matrix_idx idx) {
     return FILE_NAME[part - 1][idx];
 }
 
@@ -80,8 +80,8 @@ shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_stri
         num_data *= count[i];
     }
 
-    auto data_read = make_shared<T[]>(num_data);
-    memset(data_read.get(), 0, sizeof(T) * num_data);
+    shared_ptr<T[]> data_read(new T[num_data]);
+    memset((void*)data_read.get(), 0, sizeof(T) * num_data);
     H5File file(fname, H5F_ACC_RDONLY);
     DataSet dataset = file.openDataSet(dataset_name);
 
@@ -112,6 +112,7 @@ shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_stri
     uint64_t end = timer::get_usec();
     std::cout << "Load " << fname << " " << dataset_name << " " << num_data << " finish in " << (end - start) / 1000 << " msec" << std::endl;
 
+    file.close();
     return data_read;
 }
 
@@ -131,13 +132,14 @@ vector<vector<SortStruct>> load_order_id_from_file(int part) {
     for (int x = 0; x < NX_SUB; x++) {
         for (int y = 0; y < NY_SUB; y++) {
             for (int z = 0; z < NZ_SUB; z++) {
-                order_id[x % 10][(x / 10) * (1000 * 1000) + y * 1000 + z].order_id = data_read[x * (1000 * 1000) + y * 1000 + z];
-                order_id[x % 10][(x / 10) * (1000 * 1000) + y * 1000 + z].coor.set(x, y, z);
+                order_id[x % num_stock][(x / num_stock) * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z].order_id = data_read[x * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z];
+                order_id[x % num_stock][(x / num_stock) * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + z].coor.set(x, y, z);
             }
         }
     }
 
     for (int t = 0; t < num_stock; t++) {
+        std::cout << "sorting " << t << std::endl;
         sort(order_id[t].begin(), order_id[t].end());
     }
 
@@ -242,5 +244,6 @@ T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
 
     dataset_read(&data_read, dataset, memspace, dataspace);
 
+    file.close();
     return data_read;
 }

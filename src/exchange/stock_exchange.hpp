@@ -31,6 +31,10 @@ private:
 public:
     StockExchange(int stk_code) : stk_code(stk_code), last_commit_order_id(0) {}
 
+    std::vector<Trade>& getTradeList() {
+        return trade_list;
+    }
+
     int receiveOrder(Order& order) {
         /* sanity check */
         assert(order.stk_code == stk_code);
@@ -43,6 +47,7 @@ public:
          */
 
         /* `not_ready_orders` should maintain as heap */
+        /* TODO: should maintain as a sliding window */
         not_ready_orders.push_back(order);
         std::push_heap(not_ready_orders.begin(), not_ready_orders.end(), orderGtById);
 
@@ -55,9 +60,12 @@ public:
             /* Handle single order */
             ret = commitOrder(not_ready_orders[0]);
             if (ret != 0) {
-                log("error value: %d\n", ret);
-                break;
+                log("[%d] status ret=%d\n", last_commit_order_id + 1, ret);
             }
+            // decl_book.print();
+
+            // std::string str;
+            // getline(std::cin, str);
 
             /* Erase commited order */
             std::pop_heap(not_ready_orders.begin(), not_ready_orders.end(), orderGtById);

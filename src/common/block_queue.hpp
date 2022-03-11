@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <mutex>
 #include <condition_variable>
@@ -20,8 +22,15 @@ public:
     BlockQueue &operator = (const BlockQueue &) = delete;
 
 public:
+    // blocking api
     void put(const T t);
     T take();
+
+    // non-blocking api
+    bool offer(const T t);
+    bool poll(T& t);
+    bool offer(const T t, std::chrono::milliseconds& time);
+    bool poll(T& t, std::chrono::milliseconds& time);
 
     bool empty() const{
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -39,12 +48,6 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_queue.size();
     }
-
-public:
-    bool offer(const T t);
-    bool poll(T& t);
-    bool offer(const T t, std::chrono::milliseconds& time);
-    bool poll(T& t, std::chrono::milliseconds& time);
 
 private:
     std::deque<T> m_queue;

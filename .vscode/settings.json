@@ -60,6 +60,9 @@
         "numeric": "cpp",
         "random": "cpp",
         "future": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "csignal": "cpp",
+        "codecvt": "cpp",
+        "unordered_set": "cpp"
     }
 }

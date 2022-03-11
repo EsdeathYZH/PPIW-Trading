@@ -80,8 +80,8 @@ shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_stri
         num_data *= count[i];
     }
 
-    auto data_read = make_shared<T[]>(num_data);
-    memset(data_read.get(), 0, sizeof(T) * num_data);
+    shared_ptr<T[]> data_read(new T[num_data]);
+    memset((void*)data_read.get(), 0, sizeof(T) * num_data);
     H5File file(fname, H5F_ACC_RDONLY);
     DataSet dataset = file.openDataSet(dataset_name);
 
@@ -112,6 +112,7 @@ shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_stri
     uint64_t end = timer::get_usec();
     std::cout << "Load " << fname << " " << dataset_name << " " << num_data << " finish in " << (end - start) / 1000 << " msec" << std::endl;
 
+    file.close();
     return data_read;
 }
 
@@ -138,6 +139,7 @@ vector<vector<SortStruct>> load_order_id_from_file(int part) {
     }
 
     for (int t = 0; t < num_stock; t++) {
+        std::cout << "sorting " << t << std::endl;
         sort(order_id[t].begin(), order_id[t].end());
     }
 
@@ -242,28 +244,6 @@ T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
 
     dataset_read(&data_read, dataset, memspace, dataspace);
 
+    file.close();
     return data_read;
 }
-
-class OrderInfoMatrix {
-   public:
-    shared_ptr<direction_t[]> direction_matrix;
-    shared_ptr<type_t[]> type_matrix;
-    shared_ptr<price_t[]> price_matrix;
-    shared_ptr<volume_t[]> volume_matrix;
-
-    Order generate_order(const stock_code_t stock_code, const SortStruct ss, const int nx, const int ny, const int nz) const {
-        int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_y();
-        assert((0 <= x && x < nx) && (0 <= y && y < ny) && (0 <= z && z < nz));
-        assert(stock_code == x % num_stock + 1);
-        Order order;
-        order.stk_code = stock_code;
-        order.order_id = ss.order_id;
-        order.direction = direction_matrix[x * (ny * nz) + y * (nz) + z];
-        order.type = type_matrix[x * (ny * nz) + y * (nz) + z];
-        order.price = price_matrix[x * (ny * nz) + y * (nz) + z];
-        order.volume = volume_matrix[x * (ny * nz) + y * (nz) + z];
-
-        return order;
-    }
-};

@@ -13,16 +13,21 @@ public:
         }
     };
 
+    StockExchange& getStockExchange(int stk_code) {
+        return stock_exchange[stk_code];
+    }
+
     int handleSingleOrder(Order& order) {
         /* sanity check */
-        assert(order.order_id >= 1 && order.order_id <= 10);
+        assert(order.stk_code >= 1 && order.stk_code <= 10);
 
-        int ret = stock_exchange[order.order_id].receiveOrder(order);
-        if (ret != 0) {
-            log("error number: %d\n", ret);
-        }
+        order.print();
+        int ret = stock_exchange[order.stk_code].receiveOrder(order);
+        // if (ret != 0) {
+        //     log("error number: %d\n", ret);
+        // }
 
-        return -1;
+        return 0;
 
     }
 };

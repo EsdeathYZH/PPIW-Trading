@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include <cstdio>
 
 using stock_code_t = int;
 using order_id_t = int;
@@ -21,7 +22,13 @@ struct Order {
     int volume;
 
     void print() const {
-        std::cout << "(" << stk_code << "," << order_id << "," << direction << "," << type << "," << price << "," << volume << ")";
+        printf("[%d] order_id: %d\tdirection: %d\ttype: %d\tprice: %.2f\t, volume: %d\n",
+                stk_code,
+                order_id,
+                direction,
+                type,
+                price,
+                volume);
     }
 };
 

@@ -9,20 +9,22 @@
 
 namespace ubiquant {
 
-class TraderOrderSender : public ubi_thread {
+class ExchangeTradeSender : public ubi_thread {
 public:
-    TraderOrderSender();
+    ExchangeTradeSender();
 
     void run() override;
 
-    void put_order(Order& order);
+    void put_trade(Trade& trade);
+
+    // void put_order_ack(OrderAck& ack);
 
 protected:
     // socket client
     std::shared_ptr<MessageSender> msg_sender_;
 
-    // order queue
-    BlockQueue<Order> order_queue_;
+    // msg queue
+    BlockQueue<std::string> msg_queue_;
 };
 
 }  // namespace ubiquant

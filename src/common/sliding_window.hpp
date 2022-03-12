@@ -15,12 +15,15 @@ public:
     using size_type = typename std::vector<T>::size_type;
 
 public:
+    SlidingWindow() : capacity_(0) {}
     SlidingWindow(const int capacity)  
-        : capacity_(capacity), data_(capacity), avaliable_(capacity_, false) {}
+        : data_(capacity), avaliable_(capacity_, false), capacity_(capacity) {}
     ~SlidingWindow(){}
 
     SlidingWindow(const SlidingWindow &) = delete;
     SlidingWindow &operator = (const SlidingWindow &) = delete;
+    SlidingWindow(SlidingWindow &&) = default;
+    SlidingWindow &operator = (SlidingWindow &&) = default;
 
 public:
     // blocking api
@@ -30,7 +33,7 @@ public:
     // non-blocking api
     // NOTICE: we have no offer function because every put operation will be success
     bool poll(T& t);
-    bool poll(T& t, std::chrono::milliseconds& time)
+    bool poll(T& t, std::chrono::milliseconds& time);
 
 private:
     std::vector<T> data_;
@@ -89,16 +92,9 @@ bool SlidingWindow<T>::poll(T& t, std::chrono::milliseconds& time){
     return true;
 }
 
-// demo
-static void produce(SlidingWindow<int> &q){
-    // TODO
-}
-
-void consume(SlidingWindow<int> &q){
-    // TODO
-}
-
 static void testSlidingWindow(){
+    auto produce = [](SlidingWindow<int> &q) {};
+    auto consume = [](SlidingWindow<int> &q) {};
     SlidingWindow<int> window(2);
     std::thread t1(produce, std::ref(window));
     std::thread t2(consume, std::ref(window));

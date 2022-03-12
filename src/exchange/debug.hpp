@@ -13,7 +13,9 @@
 #include <cstdio>
 #include <vector>
 
-void printTrade(Trade *t) {
+namespace ubiquant {
+
+static void printTrade(Trade *t) {
     printf("[%d] %d <- %d\t%.2f\t* %d\n",
         t->stk_code,
         t->bid_id,
@@ -22,7 +24,7 @@ void printTrade(Trade *t) {
         t->volume);
 }
 
-bool diffTradeList(std::vector<Trade>& v1, std::vector<Trade>& v2)
+static bool diffTradeList(std::vector<Trade>& v1, std::vector<Trade>& v2)
 {
     int size1 = v1.size();
     int size2 = v2.size();
@@ -49,9 +51,11 @@ bool diffTradeList(std::vector<Trade>& v1, std::vector<Trade>& v2)
     return true;
 }
 
-void printTradeList(std::vector<Trade>& tv) {
-    for (int i = 0; i < tv.size(); ++i) {
-        printf("%d:\t", i);
+static void printTradeList(std::vector<Trade>& tv) {
+    for (size_t i = 0; i < tv.size(); ++i) {
+        printf("%ld:\t", i);
         printTrade(&tv[i]);
     }
 }
+
+}  // namespace ubiquant

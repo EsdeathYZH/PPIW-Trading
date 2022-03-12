@@ -23,7 +23,7 @@ struct SellRecord : public Record {
 };
 
 /* for debugging */
-void printRecord(Record& r) {
+static void printRecord(Record& r) {
     printf("order_id:%d\tprice:%.2f\tvolume:%d\n", r.order_id, r.price, r.volume);
 }
 

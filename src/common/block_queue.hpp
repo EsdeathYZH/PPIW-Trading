@@ -130,24 +130,21 @@ bool BlockQueue<T>::poll(T& t, std::chrono::milliseconds& time){
     return true;
 }
 
-// demo
-static void produce(BlockQueue<int> &q){
-    const int num = 9;
-    for(int i = 0; i < num; ++i){
-        //q.offer(i);  // 只打印  0   1
-        q.put(i);
-    }
-}
-
-void consume(BlockQueue<int> &q){
-    while(false == q.empty()){
-        int tmp = q.take();
-        std::cout << tmp << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
-
 static void testBlockQueue(){
+    auto produce = [](BlockQueue<int> &q) {
+        const int num = 9;
+        for(int i = 0; i < num; ++i){
+            //q.offer(i);  // 只打印  0   1
+            q.put(i);
+        }   
+    };
+    auto consume = [](BlockQueue<int> &q) {
+        while(false == q.empty()){
+            int tmp = q.take();
+            std::cout << tmp << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    };
     BlockQueue<int> iqueue(2);
     std::thread t1(produce, std::ref(iqueue));
     std::thread t2(consume, std::ref(iqueue));

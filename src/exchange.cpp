@@ -4,10 +4,10 @@
 #include <cstdio>
 #include <iostream>
 
-#include "exchange/exchange.hpp"
+#include "exchange/exchange.h"
 
 int main()
 {
-    std::cout << "sizeof(Trade): " << sizeof(Trade) << std::endl;
+    std::cout << "sizeof(Trade): " << sizeof(ubiquant::Trade) << std::endl;
     return 0;
 }

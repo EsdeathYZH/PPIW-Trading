@@ -100,8 +100,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         sr->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -147,8 +147,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         br->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -160,7 +160,7 @@ int StockExchange::commitOrder(Order& order) {
                         produceTrade(new_trade);
 
                         left_volume -= br->volume;
-                        decl_book.removeSellFirst();
+                        decl_book.removeBuyFirst();
                     }
                 }
 
@@ -203,8 +203,8 @@ int StockExchange::commitOrder(Order& order) {
                         new_trade.volume = left_volume;
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         sr->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         /* 卖一将被完全处理，当前申报继续 */
                         Trade new_trade;
@@ -251,8 +251,8 @@ int StockExchange::commitOrder(Order& order) {
                         new_trade.volume = left_volume;
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         br->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade;
                         new_trade.stk_code = stk_code;
@@ -351,8 +351,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         sr->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -391,8 +391,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         br->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -434,8 +434,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         sr->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -473,8 +473,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         br->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -524,8 +524,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         sr->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,
@@ -560,8 +560,8 @@ int StockExchange::commitOrder(Order& order) {
                         };
                         produceTrade(new_trade);
 
-                        left_volume -= left_volume;
                         br->volume -= left_volume;
+                        left_volume -= left_volume;
                     } else {
                         Trade new_trade = {
                             stk_code:   stk_code,

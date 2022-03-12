@@ -30,13 +30,30 @@ TraderTradeReceiver::~TraderTradeReceiver()
 void TraderTradeReceiver::run() {
     while(true) {
         std::string msg = msg_receiver_->recv();
-        // TODO: process OrderAck or Trade
+        uint32_t msg_code;
+        size_t offset = 0;
+        get_elem_from_buf(msg.c_str(), offset, msg_code);
+        if(msg_code == MSG_TYPE::ORDER_ACK_MSG) {
+            process_order_ack(msg);
+        } else if (msg_code == MSG_TYPE::TRADE_MSG) {
+            process_trade_result(msg);
+        } else {
+            ASSERT_MSG(false, "Wrong message code!");
+        }
     }
 }
 
 void TraderTradeReceiver::process_trade_result(std::string& msg) {
     // de-serialize
     std::vector<Trade> trades;
+    size_t offset = sizeof(uint32_t); // skip msg code
+    uint32_t cnt = 0;
+    get_elem_from_buf(msg.c_str(), offset, cnt);
+    trades.resize(cnt);
+    for(auto& trade : trades) {
+        trade.from_str(msg, offset);
+    }
+    
     for(auto& trade : trades) {
         trade_buffer_[trade.stk_code].push_back(trade);
         // batch write

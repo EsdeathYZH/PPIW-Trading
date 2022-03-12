@@ -17,14 +17,24 @@ void ExchangeTradeSender::run() {
 }
 
 void ExchangeTradeSender::put_trade(Trade& trade) {
-    // TODO: build trade msg
+    // build trade msg
     std::string trade_msg;
+    uint32_t msg_code = MSG_TYPE::TRADE_MSG;
+    uint32_t cnt = 1;
+    trade_msg.append((char*)&msg_code, sizeof(uint32_t));
+    trade_msg.append((char*)&cnt, sizeof(uint32_t));
+    trade.append_to_str(trade_msg);
     msg_queue_.put(trade_msg);
 }
 
 void ExchangeTradeSender::put_order_ack(OrderAck& ack) {
-    // TODO: build ack msg
+    // build ack msg
     std::string ack_msg;
+    uint32_t msg_code = MSG_TYPE::ORDER_ACK_MSG;
+    uint32_t cnt = 1;
+    ack_msg.append((char*)&msg_code, sizeof(uint32_t));
+    ack_msg.append((char*)&cnt, sizeof(uint32_t));
+    ack.append_to_str(ack_msg);
     msg_queue_.put(ack_msg);
 }
 

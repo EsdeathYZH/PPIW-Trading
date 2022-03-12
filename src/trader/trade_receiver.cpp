@@ -28,7 +28,10 @@ TraderTradeReceiver::~TraderTradeReceiver()
 }
 
 void TraderTradeReceiver::run() {
-    // TODO
+    while(true) {
+        std::string msg = msg_receiver_->recv();
+        // TODO: process OrderAck or Trade
+    }
 }
 
 void TraderTradeReceiver::process_trade_result(std::string& msg) {

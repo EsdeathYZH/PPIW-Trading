@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "common/type.hpp"
+#include "common/global.hpp"
 #include "common/thread.h"
 #include "network/msg_receiver.h"
 

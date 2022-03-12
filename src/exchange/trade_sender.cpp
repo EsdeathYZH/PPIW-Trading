@@ -2,7 +2,8 @@
 
 namespace ubiquant {
 
-ExchangeTradeSender::ExchangeTradeSender() {
+ExchangeTradeSender::ExchangeTradeSender() 
+    : msg_queue_(Config::sliding_window_size * Config::stock_num / 2){
     
 }
 
@@ -19,6 +20,12 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     // TODO: build trade msg
     std::string trade_msg;
     msg_queue_.put(trade_msg);
+}
+
+void ExchangeTradeSender::put_order_ack(OrderAck& ack) {
+    // TODO: build ack msg
+    std::string ack_msg;
+    msg_queue_.put(ack_msg);
 }
 
 }  // namespace ubiquant

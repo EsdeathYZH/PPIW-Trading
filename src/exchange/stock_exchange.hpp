@@ -1,11 +1,14 @@
 #pragma once
 
 #include "common/type.hpp"
+#include "common/global.hpp"
 #include "stock_decl_book.hpp"
 #include "record.hpp"
 #include "debug.hpp"
 
-class StockExchange {
+namespace ubiquant {
+
+class StockExchange : public ubi_thread {
 /**
  * @brief 单只股票的 exchange 处理
  */
@@ -30,6 +33,27 @@ private:
 
 public:
     StockExchange(int stk_code) : stk_code(stk_code), last_commit_order_id(0) {}
+
+    void run() override {
+        while(true) {
+            std::vector<Order> orders = comsumeOrder();
+            for(auto& order : orders) {
+                receiveOrder(order);
+            }
+        }
+    }
+
+    std::vector<Order> comsumeOrder() {
+        return Global<Exchange>::Get()->comsumeOrder(stk_code);
+    }
+
+    void produceTrade(Trade& new_trade) {
+        // version1: local vector storage
+        // trade_list.push_back(new_trade);
+
+        // version2: call Exchange to push into global msg queue
+        Global<Exchange>::Get()->produceTrade(new_trade);
+    }
 
     std::vector<Trade>& getTradeList() {
         return trade_list;
@@ -108,7 +132,7 @@ public:
                                 price:      sr->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             sr->volume -= left_volume;
@@ -120,7 +144,7 @@ public:
                                 price:      sr->price,
                                 volume:     sr->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= sr->volume,
                             decl_book.removeSellFirst();
@@ -155,7 +179,7 @@ public:
                                 price:      br->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             br->volume -= left_volume;
@@ -167,7 +191,7 @@ public:
                                 price:      br->price,
                                 volume:     br->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= br->volume;
                             decl_book.removeSellFirst();
@@ -211,7 +235,7 @@ public:
                             new_trade.ask_id = sr->order_id; /* seller's order_id */
                             new_trade.price = t_price;
                             new_trade.volume = left_volume;
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             sr->volume -= left_volume;
@@ -223,7 +247,7 @@ public:
                             new_trade.ask_id = sr->order_id;
                             new_trade.price = t_price;
                             new_trade.volume = sr->volume;
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= sr->volume;
                             decl_book.removeSellFirst();
@@ -259,7 +283,7 @@ public:
                             new_trade.ask_id = order.order_id;
                             new_trade.price = t_price;
                             new_trade.volume = left_volume;
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             br->volume -= left_volume;
@@ -270,7 +294,7 @@ public:
                             new_trade.ask_id = order.order_id;
                             new_trade.price = t_price;
                             new_trade.volume = br->volume;
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= br->volume;
                             decl_book.removeBuyFirst();
@@ -359,7 +383,7 @@ public:
                                 price:      sr->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             sr->volume -= left_volume;
@@ -371,7 +395,7 @@ public:
                                 price:      sr->price,
                                 volume:     sr->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= sr->volume;
                             decl_book.removeSellFirst();
@@ -399,7 +423,7 @@ public:
                                 price:      br->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             br->volume -= left_volume;
@@ -411,7 +435,7 @@ public:
                                 price:      br->price,
                                 volume:     br->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= br->volume;
                             decl_book.removeBuyFirst();
@@ -442,7 +466,7 @@ public:
                                 price:      sr->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             sr->volume -= left_volume;
@@ -454,7 +478,7 @@ public:
                                 price:      sr->price,
                                 volume:     sr->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= sr->volume;
                             decl_book.removeSellFirst();
@@ -481,7 +505,7 @@ public:
                                 price:      br->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             br->volume -= left_volume;
@@ -493,7 +517,7 @@ public:
                                 price:      br->price,
                                 volume:     br->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= br->volume;
                             decl_book.removeBuyFirst();
@@ -532,7 +556,7 @@ public:
                                 price:      sr->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             sr->volume -= left_volume;
@@ -544,7 +568,7 @@ public:
                                 price:      sr->price,
                                 volume:     sr->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= sr->volume;
                             decl_book.removeSellFirst();
@@ -568,7 +592,7 @@ public:
                                 price:      br->price,
                                 volume:     left_volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= left_volume;
                             br->volume -= left_volume;
@@ -580,7 +604,7 @@ public:
                                 price:      br->price,
                                 volume:     br->volume
                             };
-                            trade_list.push_back(new_trade);
+                            produceTrade(new_trade);
 
                             left_volume -= br->volume;
                             decl_book.removeBuyFirst();
@@ -600,3 +624,5 @@ public:
         return 0;
     }
 };
+
+}  // namespace ubiquant

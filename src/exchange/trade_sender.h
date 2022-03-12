@@ -17,7 +17,7 @@ public:
 
     void put_trade(Trade& trade);
 
-    // void put_order_ack(OrderAck& ack);
+    void put_order_ack(OrderAck& ack);
 
 protected:
     // socket client

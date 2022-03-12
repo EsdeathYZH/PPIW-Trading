@@ -45,6 +45,7 @@ private:
 template <class T>
 void SlidingWindow<T>::put(const T t, size_t idx){
     std::unique_lock<std::mutex> lock(m_mutex);
+    ASSERT(!avaliable_[idx]);
     data_[idx] = t;
     avaliable_[idx] = true;
     if(idx == head_) {

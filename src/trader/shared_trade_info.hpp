@@ -47,7 +47,7 @@ class SharedTradeInfo {
     }
 
     SharedTradeInfo(std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> in_hooked_trade) : hooked_trade(in_hooked_trade) {
-        sliding_window_start = std::vector<order_id_t>(Config::stock_num, 0);
+        sliding_window_start = std::vector<order_id_t>(Config::stock_num, 1);
     }
 };
 

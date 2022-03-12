@@ -32,6 +32,14 @@ private:
         return o1.order_id > o2.order_id;
     };
 
+    // Different handler for type 0 - 5
+    int handleLimitOrder(Order& order);
+    int handleCounterpartyBest(Order& order);
+    int handleOurBest(Order& order);
+    int handleFiveLevelOtherCancel(Order& order);
+    int handleImmediateOtherCancel(Order& order);
+    int handleWholeOrCancel(Order& order);
+
 public:
     StockExchange(int stk_code);
 

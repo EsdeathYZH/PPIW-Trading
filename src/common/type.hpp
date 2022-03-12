@@ -1,7 +1,11 @@
 #pragma once
 #include <cstdint>
-#include <memory>
 #include <cstdio>
+#include <memory>
+
+#include "common/config.hpp"
+
+namespace ubiquant {
 
 using stock_code_t = int;
 using order_id_t = int;
@@ -23,12 +27,12 @@ struct Order {
 
     void print() const {
         printf("[%d] order_id: %d\tdirection: %d\ttype: %d\tprice: %.2f\t, volume: %d\n",
-                stk_code,
-                order_id,
-                direction,
-                type,
-                price,
-                volume);
+               stk_code,
+               order_id,
+               direction,
+               type,
+               price,
+               volume);
     }
 };
 
@@ -94,7 +98,7 @@ class OrderInfoMatrix {
     Order generate_order(const stock_code_t stock_code, const SortStruct ss, const int nx, const int ny, const int nz) const {
         int x = ss.coor.get_x(), y = ss.coor.get_y(), z = ss.coor.get_z();
         assert((0 <= x && x < nx) && (0 <= y && y < ny) && (0 <= z && z < nz));
-        assert(stock_code == x % num_stock + 1);
+        assert(stock_code == x % Config::stock_num + 1);
         Order order;
         order.stk_code = stock_code;
         order.order_id = ss.order_id;
@@ -106,3 +110,5 @@ class OrderInfoMatrix {
         return order;
     }
 };
+
+}  // namespace ubiquant

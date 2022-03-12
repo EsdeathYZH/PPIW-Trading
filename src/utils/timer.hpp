@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/time.h>
+namespace ubiquant {
 
 class timer {
    public:
@@ -14,3 +15,5 @@ class timer {
         return ((tp.tv_sec * 1000 * 1000) + (tp.tv_nsec / 1000));
     }
 };
+
+}  // namespace ubiquant

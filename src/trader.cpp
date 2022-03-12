@@ -24,15 +24,9 @@ int main(int argc, char *argv[]) {
     std::cout << "part_id: " << part_id << std::endl;
     std::cout << "cache_dir: " << cache_dir << std::endl;
 
-    auto price_limits = load_prev_close(part_id);
-    auto [hook, hooked_trade] = load_hook();
-    auto sorted_order_id = load_order_id_from_file(part_id);
-
-    Coordinates coor;
-    coor.set(1, 1, 1);
-    double single_price = load_single_data_from_file<double>(part_id, price_idx, coor);
-
-    std::cout << "load single number " << single_price << std::endl;
+    auto price_limits = ubiquant::load_prev_close(part_id);
+    auto [hook, hooked_trade] = ubiquant::load_hook();
+    auto sorted_order_id = ubiquant::load_order_id_from_file(part_id);
 
     // read a 500x1000x1000 matrix
     const int NX_SUB = 500;
@@ -42,15 +36,15 @@ int main(int argc, char *argv[]) {
 
     hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
     hsize_t offset[3] = {0, 0, 0};
-    OrderInfoMatrix oim;
-    oim.direction_matrix = load_matrix_from_file<direction_t>(get_fname(part_id, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
-    oim.type_matrix = load_matrix_from_file<type_t>(get_fname(part_id, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
-    oim.price_matrix = load_matrix_from_file<price_t>(get_fname(part_id, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
-    oim.volume_matrix = load_matrix_from_file<volume_t>(get_fname(part_id, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
+    ubiquant::OrderInfoMatrix oim;
+    oim.direction_matrix = ubiquant::load_matrix_from_file<ubiquant::direction_t>(ubiquant::get_fname(part_id, ubiquant::direction_idx), ubiquant::DATASET_NAME[ubiquant::direction_idx], RANK, count, offset);
+    oim.type_matrix = ubiquant::load_matrix_from_file<ubiquant::type_t>(ubiquant::get_fname(part_id, ubiquant::type_idx), ubiquant::DATASET_NAME[ubiquant::type_idx], RANK, count, offset);
+    oim.price_matrix = ubiquant::load_matrix_from_file<ubiquant::price_t>(ubiquant::get_fname(part_id, ubiquant::price_idx), ubiquant::DATASET_NAME[ubiquant::price_idx], RANK, count, offset);
+    oim.volume_matrix = ubiquant::load_matrix_from_file<ubiquant::volume_t>(ubiquant::get_fname(part_id, ubiquant::volume_idx), ubiquant::DATASET_NAME[ubiquant::volume_idx], RANK, count, offset);
 
-    for (int t = 0; t < num_stock; t++) {
+    for (int t = 0; t < ubiquant::Config::stock_num; t++) {
         for (int i = 0; i < 5; i++) {
-            Order order = oim.generate_order(t + 1, sorted_order_id[t][i], NX_SUB, NY_SUB, NZ_SUB);
+            ubiquant::Order order = oim.generate_order(t + 1, sorted_order_id[t][i], NX_SUB, NY_SUB, NZ_SUB);
             order.print();
             std::cout << " ";
         }

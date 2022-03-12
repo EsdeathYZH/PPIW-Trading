@@ -52,10 +52,6 @@ int StockExchange::receiveOrder(Order& order) {
         if (ret != 0) {
             log("[%d] status ret=%d\n", last_commit_order_id + 1, ret);
         }
-        // decl_book.print();
-
-        // std::string str;
-        // getline(std::cin, str);
 
         /* Erase commited order */
         std::pop_heap(not_ready_orders.begin(), not_ready_orders.end(), orderGtById);
@@ -195,24 +191,26 @@ int StockExchange::commitOrder(Order& order) {
                 while (left_volume) {
                     if (left_volume < sr->volume) {
                         /* 当前申报可以完全处理，卖一还有剩余 */
-                        Trade new_trade;
-                        new_trade.stk_code = stk_code;
-                        new_trade.bid_id = order.order_id; /* buyer's order_id */
-                        new_trade.ask_id = sr->order_id; /* seller's order_id */
-                        new_trade.price = t_price;
-                        new_trade.volume = left_volume;
+                        Trade new_trade = {
+                            stk_code:   stk_code,
+                            bid_id:     order.order_id,
+                            ask_id:     sr->order_id,
+                            price:      t_price,
+                            volume:     left_volume
+                        };
                         produceTrade(new_trade);
 
                         sr->volume -= left_volume;
                         left_volume -= left_volume;
                     } else {
                         /* 卖一将被完全处理，当前申报继续 */
-                        Trade new_trade;
-                        new_trade.stk_code = stk_code;
-                        new_trade.bid_id = order.order_id;
-                        new_trade.ask_id = sr->order_id;
-                        new_trade.price = t_price;
-                        new_trade.volume = sr->volume;
+                        Trade new_trade = {
+                            stk_code:   stk_code,
+                            bid_id:     order.order_id,
+                            ask_id:     sr->order_id,
+                            price:      t_price,
+                            volume:     sr->volume
+                        };
                         produceTrade(new_trade);
 
                         left_volume -= sr->volume;
@@ -243,23 +241,25 @@ int StockExchange::commitOrder(Order& order) {
 
                 while (left_volume) {
                     if (left_volume < br->volume) {
-                        Trade new_trade;
-                        new_trade.stk_code = stk_code;
-                        new_trade.bid_id = br->order_id;
-                        new_trade.ask_id = order.order_id;
-                        new_trade.price = t_price;
-                        new_trade.volume = left_volume;
+                        Trade new_trade = {
+                            stk_code:   stk_code,
+                            bid_id:     br->order_id,
+                            ask_id:     order.order_id,
+                            price:      t_price,
+                            volume:     left_volume
+                        };
                         produceTrade(new_trade);
 
                         br->volume -= left_volume;
                         left_volume -= left_volume;
                     } else {
-                        Trade new_trade;
-                        new_trade.stk_code = stk_code;
-                        new_trade.bid_id = br->order_id;
-                        new_trade.ask_id = order.order_id;
-                        new_trade.price = t_price;
-                        new_trade.volume = br->volume;
+                        Trade new_trade = {
+                            stk_code:    stk_code,
+                            bid_id:      br->order_id,
+                            ask_id:      order.order_id,
+                            price:       t_price,
+                            volume:      br->volume
+                        };
                         produceTrade(new_trade);
 
                         left_volume -= br->volume;

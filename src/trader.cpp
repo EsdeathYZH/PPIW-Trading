@@ -3,6 +3,7 @@
 #include <string>
 
 #include "common/loader.hpp"
+#include "trader/shared_trade_info.hpp"
 #include "utils/timer.hpp"
 
 int main(int argc, char *argv[]) {
@@ -49,6 +50,51 @@ int main(int argc, char *argv[]) {
             std::cout << " ";
         }
         std::cout << std::endl;
+    }
+
+    std::vector<int> next_sorted_struct_idx(ubiquant::Config::stock_num, 0);
+    auto sharedInfo = std::make_shared<ubiquant::SharedTradeInfo>(hooked_trade);
+    // check hook and price limits
+    // if order is going to abandoned, set type of order as -1
+
+    while (ubiquant::at_work()) {
+        std::vector<ubiquant::Order> order_to_send;
+
+        for (int t = 0; t < ubiquant::Config::stock_num; t++) {
+            // sending order with id less than order_id_limits
+            uint64_t order_id_limits = sharedInfo->get_sliding_window_start(t + 1) + ubiquant::Config::sliding_window_size;
+            int &ss_idx = next_sorted_struct_idx[t];
+            while (true) {
+                ubiquant::Order order = oim.generate_order(t + 1, sorted_order_id[t][ss_idx], NX_SUB, NY_SUB, NZ_SUB);
+
+                // check order id < order_id_limits
+                if (order.order_id >= order_id_limits)
+                    break;
+
+                // check if is hook
+                if (hook[t].count(order.order_id)) {
+                    ubiquant::HookTarget ht = hook[t][order.order_id];
+                    ubiquant::volume_t v = sharedInfo->get_hooked_volume(ht.target_stk_code, ht.target_trade_idx);
+                    if (v == -1)
+                        break;
+                    else if (v > ht.arg) // constraint is not met, abandon hook order
+                        order.type = -1;
+                }
+
+                // check if within price limit when type == 0 限价申报
+                // abandon order if price exceed limits
+                if (order.type == 0 && (order.price < price_limits[0][t] || order.price > price_limits[1][t]))
+                    order.type = -1;
+
+                ss_idx++;
+                order_to_send.push_back(order);
+            }
+        }
+
+        // TODO: send order
+        
+        // TODO: remove this
+        ubiquant::finish_work();
     }
 
     return 0;

@@ -9,6 +9,12 @@
 
 namespace ubiquant {
 
+volatile bool work_flag = true;
+
+inline bool at_work() { return work_flag; }
+
+inline void finish_work() { work_flag = false; }
+
 // Usage: auto sti = std::make_shared<SharedTradeInfo>(hooked_trade);
 class SharedTradeInfo {
     mutable std::mutex m;

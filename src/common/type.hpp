@@ -15,6 +15,12 @@ using price_t = double;
 using volume_t = int;
 using trade_idx_t = int;
 
+template <typename T>
+void get_elem_from_buf(const char* buf, size_t& offset, T& elem) {
+    elem = (T*)(buf + offset);
+    offset += sizeof(T);
+}
+
 // stk_code, order id and trade index start at 1...
 
 struct Order {
@@ -24,6 +30,35 @@ struct Order {
     int type;
     double price;
     int volume;
+
+    void append_to_str(std::string& str) const {
+        str.reserve(str.length() + sizeof(Order));
+        str.append((char*)&stk_code, sizeof(stk_code));
+        str.append((char*)&order_id, sizeof(order_id));
+        str.append((char*)&direction, sizeof(direction));
+        str.append((char*)&type, sizeof(type));
+        str.append((char*)&price, sizeof(price));
+        str.append((char*)&volume, sizeof(volume));
+    }
+
+    void from_str(const std::string& str) {
+        assert(str.length() == sizeof(Order));
+        const char* buf = str.c_str();
+        size_t offset = 0;
+        get_elem_from_buf(buf, offset, stk_code);
+        get_elem_from_buf(buf, offset, order_id);
+        get_elem_from_buf(buf, offset, direction);
+        get_elem_from_buf(buf, offset, type);
+        get_elem_from_buf(buf, offset, price);
+        get_elem_from_buf(buf, offset, volume);
+        assert(offset == sizeof(Order));
+    }
+
+    // Order() = default;
+
+    // Order(const std::string& str) {
+    //     from_str(str);
+    // }
 
     void print() const {
         printf("[%d] order_id: %d\tdirection: %d\ttype: %d\tprice: %.2f\t, volume: %d\n",
@@ -42,6 +77,34 @@ struct Trade {
     int ask_id;
     double price;
     int volume;
+
+    void append_to_str(std::string& str) const {
+        str.reserve(str.length() + sizeof(Trade));
+        str.append((char*)&stk_code, sizeof(stk_code));
+        str.append((char*)&bid_id, sizeof(bid_id));
+        str.append((char*)&ask_id, sizeof(ask_id));
+        str.append((char*)&price, sizeof(price));
+        str.append((char*)&volume, sizeof(volume));
+    }
+
+    void from_str(const std::string& str) {
+        assert(str.length() == sizeof(Trade));
+        const char* buf = str.c_str();
+        size_t offset = 0;
+        get_elem_from_buf(buf, offset, stk_code);
+        get_elem_from_buf(buf, offset, bid_id);
+        get_elem_from_buf(buf, offset, ask_id);
+        get_elem_from_buf(buf, offset, price);
+        get_elem_from_buf(buf, offset, volume);
+        assert(offset == sizeof(Trade));
+    }
+
+    // Trade() = default;
+
+    // Trade(const std::string& str) {
+    //     from_str(str);
+    // }
+
 } __attribute__((packed));
 
 struct OrderAck {

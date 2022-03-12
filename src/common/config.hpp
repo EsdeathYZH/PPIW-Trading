@@ -27,6 +27,7 @@ public:
     static int server_port_base __attribute__((weak));
 
     static int sliding_window_size __attribute__((weak));
+    static int stock_num __attribute__((weak));
 };
 
 // config init
@@ -38,6 +39,7 @@ int Config::ctrl_port_base = 9576;
 int Config::server_port_base = 6576;
 
 int Config::sliding_window_size = 100;
+int Config::stock_num = 10;
 
 static bool set_immutable_config(std::string cfg_name, std::string value)
 {

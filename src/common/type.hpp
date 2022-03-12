@@ -40,6 +40,11 @@ struct Trade {
     int volume;
 } __attribute__((packed));
 
+struct OrderAck {
+    int stk_code;
+    int order_id;
+} __attribute__((packed));
+
 class Coordinates {
    public:
     uint32_t coordinates;

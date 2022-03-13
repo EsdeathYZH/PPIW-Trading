@@ -1,4 +1,7 @@
+#include "common/global.hpp"
+
 #include "trade_receiver.h"
+#include "trader_controller.h"
 
 namespace ubiquant {
 
@@ -99,8 +102,18 @@ void TraderTradeReceiver::flush() {
 void TraderTradeReceiver::process_order_ack(std::string& msg) {
     // de-serialize
     std::vector<OrderAck> acks;
+    size_t offset = sizeof(uint32_t); // skip msg code
+    uint32_t cnt = 0;
+    get_elem_from_buf(msg.c_str(), offset, cnt);
+    acks.resize(cnt);
+    for(auto& ack : acks) {
+        ack.from_str(msg, offset);
+    }
 
-    // TODO: pass the info to controller
+    // pass the info to controller
+    for(auto& ack : acks) {
+        Global<TraderController>::Get()->update_sliding_window_start(ack.stk_code, ack.order_id+1);
+    }
 }
 
 }  // namespace ubiquant

@@ -26,6 +26,7 @@ public:
     static int ctrl_port_base __attribute__((weak));
     static int server_port_base __attribute__((weak));
 
+    static int partition_idx __attribute__((weak));
     static int sliding_window_size __attribute__((weak));
     static int stock_num __attribute__((weak));
 };
@@ -40,6 +41,7 @@ int Config::server_port_base = 6576;
 
 int Config::sliding_window_size = 100;
 int Config::stock_num = 10;
+int Config::partition_idx = -1;
 
 static bool set_immutable_config(std::string cfg_name, std::string value)
 {
@@ -130,10 +132,8 @@ static void reload_config(std::string str)
 /**
  * load config
  */
-static void load_config(std::string fname, int nsrvs)
+static void load_config(std::string fname)
 {
-    ASSERT(nsrvs > 0);
-
     // load config file
     std::map<std::string, std::string> items;
     file2items(fname, items);

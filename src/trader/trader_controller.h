@@ -3,17 +3,13 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include "H5Cpp.h"
 
 #include "common/config.hpp"
 #include "common/type.hpp"
+#include "common/thread.h"
 
 namespace ubiquant {
-
-volatile bool work_flag = true;
-
-inline bool at_work() { return work_flag; }
-
-inline void finish_work() { work_flag = false; }
 
 // Usage: auto sti = std::make_shared<SharedTradeInfo>(hooked_trade);
 class SharedTradeInfo {
@@ -55,6 +51,34 @@ class SharedTradeInfo {
     SharedTradeInfo(std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> in_hooked_trade) : hooked_trade(in_hooked_trade) {
         sliding_window_start = std::vector<order_id_t>(Config::stock_num, 1);
     }
+};
+
+class TraderController : public ubi_thread {
+public:
+    TraderController();
+
+    void load_data();
+
+    void run() override;
+
+protected:
+    std::vector<std::vector<price_t>> price_limits;
+    std::vector<std::unordered_map<order_id_t, HookTarget>> hook;
+    std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> hooked_trade;
+    std::vector<std::vector<SortStruct>> sorted_order_id;
+
+    // read a 500x1000x1000 matrix
+    const int NX_SUB = 500;
+    const int NY_SUB = 1000;
+    const int NZ_SUB = 1000;
+    const int RANK = 3;
+
+    hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
+    hsize_t offset[3] = {0, 0, 0};
+    ubiquant::OrderInfoMatrix oim;
+
+    std::vector<int> next_sorted_struct_idx;
+    std::shared_ptr<SharedTradeInfo> sharedInfo;
 };
 
 }  // namespace ubiquant

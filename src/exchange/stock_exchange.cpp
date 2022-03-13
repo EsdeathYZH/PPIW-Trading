@@ -601,6 +601,10 @@ int StockExchange::commitOrder(Order& order) {
     int ret = 0;
 
     switch (order.type) {
+        case -1: { /* Cancelled Order */
+            ret = 0;
+            break;
+        }
         case 0: { /* 限价申报 */
             ret = handleLimitOrder(order);
             break;

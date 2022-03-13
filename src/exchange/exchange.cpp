@@ -2,8 +2,16 @@
 
 namespace ubiquant {
 
-Exchange::Exchange(std::vector<int> stock_codes) {
-    for (auto code : stock_codes) {
+Exchange::Exchange() {
+    // init stock code (HALF)
+    std::vector<int> stk_codes;
+    for(int i = 0; i < Config::stock_num; i++) {
+        if(i % Config::exchange_num == Config::partition_idx) {
+            stk_codes.push_back(i);
+        }
+    }
+
+    for (auto code : stk_codes) {
         stock_exchange[code] = std::make_shared<StockExchange>(code);
         order_buffer.emplace(std::make_pair(code, Config::sliding_window_size));
     }
@@ -15,7 +23,7 @@ Exchange::~Exchange() {
     }
 }
 
-void Exchange::start() {
+void Exchange::Run() {
     for (auto& [code, exchange] : stock_exchange) {
         exchange->start();
     }

@@ -1,5 +1,9 @@
-#include <cstring>
+#include <algorithm>
+#include <vector>
+#include <cassert>
+#include <cstdio>
 #include <iostream>
+#include <cstring>
 #include <string>
 #include <mutex>
 #include <signal.h>

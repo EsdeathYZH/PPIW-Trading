@@ -2,7 +2,6 @@
 
 #include <sys/time.h>
 #include <stdint.h>
-#include <cmath>
 
 #include "util.h"
 

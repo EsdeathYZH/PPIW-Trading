@@ -18,11 +18,11 @@ private:
     std::unordered_map<int, SlidingWindow<Order>> order_buffer;
 
 public:
-    Exchange(std::vector<int> stock_codes);
+    Exchange();
 
     ~Exchange();
 
-    void start();
+    void Run();
 
     // Order receiver will call this function
     void receiveOrder(Order& order);

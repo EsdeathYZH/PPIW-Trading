@@ -17,6 +17,14 @@ TraderController::TraderController()
     sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
 }
 
+void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {
+    sharedInfo->update_sliding_window_start(stock_code, new_sliding_window_start);
+}
+
+void TraderController::update_if_hooked(const stock_code_t stock_code, const trade_idx_t trade_idx, const volume_t volume) {
+    sharedInfo->update_if_hooked(stock_code, trade_idx, volume);
+}
+
 void TraderController::load_data() {
     this->price_limits = load_prev_close(Config::partition_idx);
     std::tie(this->hook, this->hooked_trade) = load_hook();
@@ -44,8 +52,8 @@ void TraderController::Run() {
         for (int t = 0; t < Config::stock_num; t++) {
             // sending order with id less than order_id_limits
             uint64_t order_id_limits = sharedInfo->get_sliding_window_start(t + 1) + Config::sliding_window_size;
-            int &ss_idx = next_sorted_struct_idx[t];
-            while (true) {
+            
+            for (int &ss_idx = next_sorted_struct_idx[t]; ss_idx < sorted_order_id[t].size(); ss_idx++) {
                 Order order = oim.generate_order(t + 1, sorted_order_id[t][ss_idx], NX_SUB, NY_SUB, NZ_SUB);
 
                 // check order id < order_id_limits
@@ -57,7 +65,7 @@ void TraderController::Run() {
                     HookTarget ht = hook[t][order.order_id];
                     volume_t v = sharedInfo->get_hooked_volume(ht.target_stk_code, ht.target_trade_idx);
                     if (v == -1)
-                        break;
+                        break; // hook is not ready yet
                     else if (v > ht.arg) // constraint is not met, abandon hook order
                         order.type = -1;
                 }
@@ -67,7 +75,6 @@ void TraderController::Run() {
                 if (order.type == 0 && (order.price < price_limits[0][t] || order.price > price_limits[1][t]))
                     order.type = -1;
 
-                ss_idx++;
                 order_to_send.push_back(order);
             }
         }

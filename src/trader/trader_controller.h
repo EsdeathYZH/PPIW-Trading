@@ -61,6 +61,10 @@ public:
 
     void Run();
 
+    void update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start);
+
+    void update_if_hooked(const stock_code_t stock_code, const trade_idx_t trade_idx, const volume_t volume);
+
 protected:
     std::vector<std::vector<price_t>> price_limits;
     std::vector<std::unordered_map<order_id_t, HookTarget>> hook;

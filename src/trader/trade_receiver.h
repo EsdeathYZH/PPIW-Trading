@@ -31,6 +31,7 @@ protected:
 
     std::unordered_map<int, int> trade_fds_;
     std::unordered_map<int, std::vector<Trade>> trade_buffer_;
+    std::unordered_map<int, int> trade_idxs_;
 };
 
 }  // namespace ubiquant

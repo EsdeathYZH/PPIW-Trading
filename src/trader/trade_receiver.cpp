@@ -8,7 +8,8 @@ namespace ubiquant {
 TraderTradeReceiver::TraderTradeReceiver() {
     // init stock code (ALL)
     std::vector<int> stk_codes;
-    for(int i = 0; i < Config::stock_num; i++) {
+    // NOTICE: stock code starts from 1
+    for(int i = 1; i <= Config::stock_num; i++) {
         stk_codes.push_back(i);
     }
 
@@ -23,6 +24,9 @@ TraderTradeReceiver::TraderTradeReceiver() {
 
         trade_buffer_[code] = std::vector<Trade>();
         trade_buffer_[code].reserve(TRADE_BUF_THRESHOLD);
+
+        // NOTICE: trade_idx starts from 1
+        trade_idxs_[code] = 1;
     }
 }
 
@@ -64,6 +68,10 @@ void TraderTradeReceiver::process_trade_result(std::string& msg) {
     }
     
     for(auto& trade : trades) {
+        // update hook in controller
+        Global<TraderController>::Get()->update_if_hooked(trade.stk_code, trade_idxs_[trade.stk_code], trade.volume);
+        trade_idxs_[trade.stk_code]++;
+
         trade_buffer_[trade.stk_code].push_back(trade);
         // batch write
         if(trade_buffer_[trade.stk_code].size() >= TRADE_BUF_THRESHOLD) {
@@ -110,7 +118,7 @@ void TraderTradeReceiver::process_order_ack(std::string& msg) {
         ack.from_str(msg, offset);
     }
 
-    // pass the info to controller
+    // update sliding window start in controller
     for(auto& ack : acks) {
         Global<TraderController>::Get()->update_sliding_window_start(ack.stk_code, ack.order_id+1);
     }

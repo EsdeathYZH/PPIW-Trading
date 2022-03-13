@@ -19,7 +19,7 @@ enum MSG_TYPE { ORDER_MSG = 1, TRADE_MSG = 2, ORDER_ACK_MSG = 3 };
 
 template <typename T>
 void get_elem_from_buf(const char* buf, size_t& offset, T& elem) {
-    elem = (T*)(buf + offset);
+    elem = *((T*)(buf + offset));
     offset += sizeof(T);
 }
 
@@ -35,22 +35,12 @@ struct Order {
 
     void append_to_str(std::string& str) const {
         str.reserve(str.length() + sizeof(Order));
-        str.append((char*)&stk_code, sizeof(stk_code));
-        str.append((char*)&order_id, sizeof(order_id));
-        str.append((char*)&direction, sizeof(direction));
-        str.append((char*)&type, sizeof(type));
-        str.append((char*)&price, sizeof(price));
-        str.append((char*)&volume, sizeof(volume));
+        str.append((char*)this, sizeof(Order));
     }
 
     void from_str(std::string& str, size_t& offset) {
         const char* buf = (str.c_str() + offset);
-        get_elem_from_buf(buf, offset, stk_code);
-        get_elem_from_buf(buf, offset, order_id);
-        get_elem_from_buf(buf, offset, direction);
-        get_elem_from_buf(buf, offset, type);
-        get_elem_from_buf(buf, offset, price);
-        get_elem_from_buf(buf, offset, volume);
+        get_elem_from_buf(buf, offset, *this);
     }
 
     // Order() = default;
@@ -79,20 +69,12 @@ struct Trade {
 
     void append_to_str(std::string& str) const {
         str.reserve(str.length() + sizeof(Trade));
-        str.append((char*)&stk_code, sizeof(stk_code));
-        str.append((char*)&bid_id, sizeof(bid_id));
-        str.append((char*)&ask_id, sizeof(ask_id));
-        str.append((char*)&price, sizeof(price));
-        str.append((char*)&volume, sizeof(volume));
+        str.append((char*)this, sizeof(Trade));
     }
 
     void from_str(std::string& str, size_t& offset) {
         const char* buf = (str.c_str() + offset);
-        get_elem_from_buf(buf, offset, stk_code);
-        get_elem_from_buf(buf, offset, bid_id);
-        get_elem_from_buf(buf, offset, ask_id);
-        get_elem_from_buf(buf, offset, price);
-        get_elem_from_buf(buf, offset, volume);
+        get_elem_from_buf(buf, offset, *this);
     }
 
     // Trade() = default;
@@ -109,14 +91,12 @@ struct OrderAck {
 
     void append_to_str(std::string& str) const {
         str.reserve(str.length() + sizeof(OrderAck));
-        str.append((char*)&stk_code, sizeof(stk_code));
-        str.append((char*)&order_id, sizeof(order_id));
+        str.append((char*)this, sizeof(OrderAck));
     }
 
     void from_str(std::string& str, size_t& offset) {
         const char* buf = (str.c_str() + offset);
-        get_elem_from_buf(buf, offset, stk_code);
-        get_elem_from_buf(buf, offset, order_id);
+        get_elem_from_buf(buf, offset, *this);
     }
 } __attribute__((packed));
 

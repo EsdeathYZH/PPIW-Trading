@@ -50,7 +50,7 @@ int StockExchange::receiveOrder(Order& order) {
         /* Handle single order */
         ret = commitOrder(not_ready_orders[0]);
         if (ret != 0) {
-            log("[%d] status ret=%d\n", last_commit_order_id + 1, ret);
+            ex_debug("[%d] status ret=%d\n", last_commit_order_id + 1, ret);
         }
 
         /* Erase commited order */
@@ -163,7 +163,7 @@ int StockExchange::handleLimitOrder(Order& order)
             decl_book.insertSellDecl(new_sr);
         }
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
 
     return 0;
@@ -275,7 +275,7 @@ int StockExchange::handleCounterpartyBest(Order& order)
             }
         }
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
     return 0;
 }
@@ -318,7 +318,7 @@ int StockExchange::handleOurBest(Order& order)
             order.volume};
         decl_book.insertSellDecl(new_sr);
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
     return 0;
 }
@@ -410,7 +410,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
             }
         }
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
 
     return 0;
@@ -500,7 +500,7 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
             return left_volume; /* partial reject */
         }
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
 
     return 0;
@@ -587,7 +587,7 @@ int StockExchange::handleWholeOrCancel(Order& order)
             }
         }
     } else {
-        log("strange order direction: %d\n", order.direction);
+        ex_debug("strange order direction: %d\n", order.direction);
     }
 
     return 0;
@@ -626,7 +626,7 @@ int StockExchange::commitOrder(Order& order) {
             break;
         }
         default: {
-            log("exchange type: %d\n", order.type);
+            ex_debug("exchange type: %d\n", order.type);
             return -1;
         }
     }

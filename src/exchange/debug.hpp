@@ -1,10 +1,11 @@
 #pragma once
 
-#define log(fmt, ...) printf("[%s:%d] " fmt, __FILE__, __LINE__, ## __VA_ARGS__)
+#define exchange_log(fmt, ...) printf("[%s:%d] " fmt, __FILE__, __LINE__, ## __VA_ARGS__)
+// #define log(fmt, ...) do {} while (0)
 
 #define EXCHANGE_DEBUG
 #ifdef EXCHANGE_DEBUG
-    #define ex_debug log
+    #define ex_debug exchange_log
 #else
     #define ex_debug(fmt, ...) do {} while (0)
 #endif

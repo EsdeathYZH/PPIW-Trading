@@ -2,7 +2,13 @@
 
 namespace ubiquant {
 
-TraderTradeReceiver::TraderTradeReceiver(std::vector<int> stk_codes) {
+TraderTradeReceiver::TraderTradeReceiver() {
+    // init stock code (ALL)
+    std::vector<int> stk_codes;
+    for(int i = 0; i < Config::stock_num; i++) {
+        stk_codes.push_back(i);
+    }
+
     ASSERT(!Config::data_folder.empty());
     for(auto code : stk_codes) {
         std::string path = Config::data_folder + "/trade_res." + std::to_string(code);

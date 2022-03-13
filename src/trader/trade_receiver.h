@@ -12,7 +12,7 @@ namespace ubiquant {
 
 class TraderTradeReceiver : public ubi_thread {
 public:
-    TraderTradeReceiver(std::vector<int> stk_codes);
+    TraderTradeReceiver();
     ~TraderTradeReceiver();
     
     void run() override;

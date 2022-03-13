@@ -1,4 +1,7 @@
+#include "common/global.hpp"
 #include "common/loader.hpp"
+
+#include "order_sender.h"
 #include "trader_controller.h"
 
 namespace ubiquant {
@@ -34,7 +37,7 @@ void TraderController::load_data() {
     }
 }
 
-void TraderController::run() {
+void TraderController::Run() {
     while (work_flag) {
         std::vector<Order> order_to_send;
 
@@ -69,8 +72,10 @@ void TraderController::run() {
             }
         }
 
-        // TODO: send order
-
+        // send order
+        for(auto& order : order_to_send) {
+            Global<TraderOrderSender>::Get()->put_order(order);
+        }
     }
 }
 

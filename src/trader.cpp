@@ -4,8 +4,11 @@
 #include <mutex>
 #include <signal.h>
 
+#include "common/global.hpp"
 #include "common/config.hpp"
 
+#include "trader/order_sender.h"
+#include "trader/trade_receiver.h"
 #include "trader/trader_controller.h"
 
 #include "utils/timer.hpp"
@@ -54,6 +57,8 @@ void sigabrt_handler(int sig) {
 
 } // anonymous namespace
 
+using namespace ubiquant;
+
 int main(int argc, char *argv[]) {
     /* install the event handler if necessary */
     signal(SIGSEGV, sigsegv_handler);
@@ -66,18 +71,26 @@ int main(int argc, char *argv[]) {
         std::cout << "Usage: ./trader partition_idx config_file" << std::endl;
         return 0;
     } else {
-        ubiquant::Config::partition_idx = std::stoi(std::string(argv[1]));
-        ASSERT_MSG(ubiquant::Config::partition_idx == 0 
-                || ubiquant::Config::partition_idx == 1, 
+        Config::partition_idx = std::stoi(std::string(argv[1]));
+        ASSERT_MSG(Config::partition_idx == 0 
+                || Config::partition_idx == 1, 
                     "partition_idx can only be 0 or 1!");
         config_file = std::string(argv[1]);
     }
 
     /* load config file */
-    ubiquant::load_config(config_file);
+    load_config(config_file);
 
-    std::cout << "Trade[" << ubiquant::Config::partition_idx << "]" << "is starting..." << std::endl;
-    ubiquant::print_config();
+    std::cout << "Trade[" << Config::partition_idx << "]" << "is starting..." << std::endl;
+    print_config();
+
+    Global<TraderOrderSender>::New();
+    Global<TraderTradeReceiver>::New();
+    Global<TraderController>::New();
+
+    Global<TraderOrderSender>::Get()->start();
+    Global<TraderTradeReceiver>::Get()->start();
+    Global<TraderController>::Get()->Run();
 
     return 0;
 }

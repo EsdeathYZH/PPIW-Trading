@@ -53,13 +53,13 @@ class SharedTradeInfo {
     }
 };
 
-class TraderController : public ubi_thread {
+class TraderController {
 public:
     TraderController();
 
     void load_data();
 
-    void run() override;
+    void Run();
 
 protected:
     std::vector<std::vector<price_t>> price_limits;

@@ -29,6 +29,8 @@ public:
     static int partition_idx __attribute__((weak));
     static int sliding_window_size __attribute__((weak));
     static int stock_num __attribute__((weak));
+    static int trader_num __attribute__((weak));
+    static int exchange_num __attribute__((weak));
 };
 
 // config init
@@ -41,6 +43,8 @@ int Config::server_port_base = 6576;
 
 int Config::sliding_window_size = 100;
 int Config::stock_num = 10;
+int Config::trader_num = 2;
+int Config::exchange_num = 2;
 int Config::partition_idx = -1;
 
 static bool set_immutable_config(std::string cfg_name, std::string value)

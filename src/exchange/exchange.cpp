@@ -5,7 +5,8 @@ namespace ubiquant {
 Exchange::Exchange() {
     // init stock code (HALF)
     std::vector<int> stk_codes;
-    for(int i = 0; i < Config::stock_num; i++) {
+    // NOTICE: stk_code starts from 1
+    for(int i = 1; i <= Config::stock_num; i++) {
         if(i % Config::exchange_num == Config::partition_idx) {
             stk_codes.push_back(i);
         }
@@ -31,7 +32,8 @@ void Exchange::Run() {
 
 // Order receiver will call this function
 void Exchange::receiveOrder(Order& order) {
-    int window_idx = order.order_id % Config::sliding_window_size;
+    // NOTICE: order id starts from 1
+    int window_idx = (order.order_id-1) % Config::sliding_window_size;
     order_buffer.at(order.stk_code).put(order, window_idx);
 }
 

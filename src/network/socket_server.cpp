@@ -8,7 +8,7 @@ SocketServer::SocketServer()
       socket(context),
       guard(boost::asio::make_work_guard(context)) {
 
-    this->port = Config::server_port_base;
+    this->port = 11235;
 
     // bind and listen
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);

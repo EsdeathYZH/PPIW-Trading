@@ -14,7 +14,7 @@
 
 #include "status.hpp"
 
-#include "common/config.hpp"
+#include "common/config.h"
 
 #include "utils/errors.hpp"
 #include "utils/assertion.hpp"

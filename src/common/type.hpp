@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <memory>
 
-#include "common/config.hpp"
+#include "common/config.h"
 
 namespace ubiquant {
 

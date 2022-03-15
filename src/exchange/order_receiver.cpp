@@ -8,6 +8,7 @@ ExchangeOrderReceiver::ExchangeOrderReceiver() {
 }
 
 void ExchangeOrderReceiver::run() {
+    logstream(LOG_EMPH) << "Exchange OrderReceiver is running..." << LOG_endl;
     while(true) {
         std::string msg = msg_receiver_->recv();
         // deserialize orders

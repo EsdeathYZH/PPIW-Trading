@@ -8,6 +8,7 @@ TraderOrderSender::TraderOrderSender()
 }
 
 void TraderOrderSender::run() {
+    logstream(LOG_EMPH) << "Trader OrderSender is running..." << LOG_endl;
     while(true) {
         std::string order_msg;
         uint32_t msg_code = MSG_TYPE::ORDER_MSG;

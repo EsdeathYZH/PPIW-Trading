@@ -1,0 +1,6 @@
+data_folder     /home/team-7/yzh/awsome-10w/100x10x10/
+network_config_file     network.host
+sliding_window_size     100
+stock_num       10
+trader_num      2
+exchange_num    2

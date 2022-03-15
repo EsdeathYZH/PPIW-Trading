@@ -45,7 +45,7 @@ void TraderController::load_data() {
     }
 }
 
-void TraderController::Run() {
+void TraderController::run() {
     while (work_flag) {
         std::vector<Order> order_to_send;
 

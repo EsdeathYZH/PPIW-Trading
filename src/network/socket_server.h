@@ -8,7 +8,7 @@
 
 #include "status.hpp"
 
-#include "common/config.hpp"
+#include "common/config.h"
 
 #include "utils/logger2.hpp"
 

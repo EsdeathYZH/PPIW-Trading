@@ -8,6 +8,7 @@ ExchangeTradeSender::ExchangeTradeSender()
 }
 
 void ExchangeTradeSender::run() {
+    logstream(LOG_EMPH) << "Exchange TradeSender is running..." << LOG_endl;
     while(true) {
         auto msg = msg_queue_.take();
         if(!msg_sender_->send(msg)) {

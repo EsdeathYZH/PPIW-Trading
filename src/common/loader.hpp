@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "H5Cpp.h"
-#include "common/config.hpp"
+#include "common/config.h"
 #include "common/type.hpp"
 #include "utils/assertion.hpp"
 #include "utils/timer.hpp"

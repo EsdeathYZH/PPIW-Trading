@@ -41,6 +41,7 @@ TraderTradeReceiver::~TraderTradeReceiver()
 }
 
 void TraderTradeReceiver::run() {
+    logstream(LOG_EMPH) << "Trader TradeReceiver is running..." << LOG_endl;
     while(true) {
         std::string msg = msg_receiver_->recv();
         uint32_t msg_code;

@@ -24,7 +24,7 @@ Exchange::~Exchange() {
     }
 }
 
-void Exchange::Run() {
+void Exchange::start() {
     for (auto& [code, exchange] : stock_exchange) {
         exchange->start();
     }

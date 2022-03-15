@@ -1,0 +1,20 @@
+trader0         127.0.0.1
+trader1         127.0.0.1
+exchange0       127.0.0.1
+exchange1       127.0.0.1
+
+trader0:exchange0       11230   11231
+trader0:exchange0       11232   11233
+trader0:exchange0       11234   11235
+
+trader0:exchange1       12230   12231
+trader0:exchange1       12232   12233
+trader0:exchange1       12234   12235
+
+trader1:exchange0       13230   13231
+trader1:exchange0       13232   13233
+trader1:exchange0       13234   13235
+
+trader1:exchange1       14230   14231
+trader1:exchange1       14232   14233
+trader1:exchange1       14234   14235

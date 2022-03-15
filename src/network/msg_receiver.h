@@ -12,7 +12,7 @@
 #include <sstream>
 
 
-#include "common/config.hpp"
+#include "common/config.h"
 
 // utils
 #include "utils/logger2.hpp"

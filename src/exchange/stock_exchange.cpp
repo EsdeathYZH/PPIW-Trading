@@ -5,6 +5,7 @@ namespace ubiquant {
 StockExchange::StockExchange(int stk_code) : stk_code(stk_code), last_commit_order_id(0) {}
 
 void StockExchange::run() {
+    logstream(LOG_EMPH) << "Exchange StockExchange [" << stk_code << "] is running..." << LOG_endl;
     while(true) {
         std::vector<Order> orders = comsumeOrder();
         for(auto& order : orders) {

@@ -9,9 +9,10 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 
-#include "errors.hpp"
-#include "config.hpp"
-#include "logger2.hpp"
+#include "config.h"
+
+#include "utils/errors.hpp"
+#include "utils/logger2.hpp"
 
 using namespace boost;
 using namespace boost::program_options;
@@ -364,7 +365,7 @@ void run_console()
         } while (pos == std::string::npos); // if all are blanks, do again
 
         // trim input
-        size_t pos = cmd.find_first_not_of(" \t"); // trim blanks from head
+        pos = cmd.find_first_not_of(" \t"); // trim blanks from head
         cmd.erase(0, pos);
         pos = cmd.find_last_not_of(" \t");  // trim blanks from tail
         cmd.erase(pos + 1, cmd.length() - (pos + 1));

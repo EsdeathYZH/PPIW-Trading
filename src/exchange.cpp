@@ -7,6 +7,8 @@
 #include <mutex>
 #include <signal.h>
 
+#include "common/console.hpp"
+
 #include "exchange/order_receiver.h"
 #include "exchange/trade_sender.h"
 #include "exchange/exchange.h"
@@ -76,13 +78,13 @@ int main(int argc, char *argv[])
         ASSERT_MSG(Config::partition_idx == 0 
                 || Config::partition_idx == 1, 
                     "partition_idx can only be 0 or 1!");
-        config_file = std::string(argv[1]);
+        config_file = std::string(argv[2]);
     }
 
     /* load config file */
     load_config(config_file);
 
-    std::cout << "Exchange[" << Config::partition_idx << "]" << "is starting..." << std::endl;
+    std::cout << "Exchange[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
     Global<ExchangeTradeSender>::New();
@@ -91,7 +93,9 @@ int main(int argc, char *argv[])
 
     Global<ExchangeTradeSender>::Get()->start();
     Global<ExchangeOrderReceiver>::Get()->start();
-    Global<Exchange>::Get()->Run();
+    Global<Exchange>::Get()->start();
+
+    run_console();
 
     return 0;
 }

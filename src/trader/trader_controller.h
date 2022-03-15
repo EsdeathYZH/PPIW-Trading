@@ -5,7 +5,7 @@
 #include <vector>
 #include "H5Cpp.h"
 
-#include "common/config.hpp"
+#include "common/config.h"
 #include "common/type.hpp"
 #include "common/thread.h"
 
@@ -53,13 +53,13 @@ class SharedTradeInfo {
     }
 };
 
-class TraderController {
+class TraderController : public ubi_thread {
 public:
     TraderController();
 
     void load_data();
 
-    void Run();
+    void run() override;
 
     void update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start);
 

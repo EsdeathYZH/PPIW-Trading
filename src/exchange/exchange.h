@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/config.hpp"
+#include "common/config.h"
 #include "common/thread.h"
 #include "common/block_queue.hpp"
 #include "common/sliding_window.hpp"
@@ -22,7 +22,7 @@ public:
 
     ~Exchange();
 
-    void Run();
+    void start();
 
     // Order receiver will call this function
     void receiveOrder(Order& order);

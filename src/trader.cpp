@@ -9,7 +9,8 @@
 #include <signal.h>
 
 #include "common/global.hpp"
-#include "common/config.hpp"
+#include "common/config.h"
+#include "common/console.hpp"
 
 #include "trader/order_sender.h"
 #include "trader/trade_receiver.h"
@@ -79,13 +80,13 @@ int main(int argc, char *argv[]) {
         ASSERT_MSG(Config::partition_idx == 0 
                 || Config::partition_idx == 1, 
                     "partition_idx can only be 0 or 1!");
-        config_file = std::string(argv[1]);
+        config_file = std::string(argv[2]);
     }
 
     /* load config file */
     load_config(config_file);
 
-    std::cout << "Trade[" << Config::partition_idx << "]" << "is starting..." << std::endl;
+    std::cout << "Trader[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
     Global<TraderOrderSender>::New();
@@ -94,7 +95,9 @@ int main(int argc, char *argv[]) {
 
     Global<TraderOrderSender>::Get()->start();
     Global<TraderTradeReceiver>::Get()->start();
-    Global<TraderController>::Get()->Run();
+    Global<TraderController>::Get()->start();
+
+    run_console();
 
     return 0;
 }

@@ -27,20 +27,29 @@ enum matrix_idx {
     num_matrix
 };
 
-const H5std_string h5_prefix = "/data/100x1000x1000/";
-const H5std_string hook_fname = h5_prefix + "hook.h5";
+// const H5std_string h5_prefix = "/data/100x1000x1000/";
+H5std_string hook_fname;
 
-const std::vector<std::vector<H5std_string>> FILE_NAME = {
-    {h5_prefix + "order_id1.h5",
-     h5_prefix + "direction1.h5",
-     h5_prefix + "type1.h5",
-     h5_prefix + "price1.h5",
-     h5_prefix + "volume1.h5"},
-    {h5_prefix + "order_id2.h5",
-     h5_prefix + "direction2.h5",
-     h5_prefix + "type2.h5",
-     h5_prefix + "price2.h5",
-     h5_prefix + "volume2.h5"}};
+std::vector<std::vector<H5std_string>> FILE_NAME;
+
+bool loader_inited = false;
+
+void init_loader() {
+    hook_fname = Config::data_folder + "hook.h5";
+
+    FILE_NAME = std::vector<std::vector<H5std_string>>({{Config::data_folder + "order_id1.h5",
+                                                         Config::data_folder + "direction1.h5",
+                                                         Config::data_folder + "type1.h5",
+                                                         Config::data_folder + "price1.h5",
+                                                         Config::data_folder + "volume1.h5"},
+                                                        {Config::data_folder + "order_id2.h5",
+                                                         Config::data_folder + "direction2.h5",
+                                                         Config::data_folder + "type2.h5",
+                                                         Config::data_folder + "price2.h5",
+                                                         Config::data_folder + "volume2.h5"}});
+
+    loader_inited = true;
+}
 
 // part should be 1 or 2
 inline H5std_string get_fname(int part, matrix_idx idx) {
@@ -73,6 +82,8 @@ void dataset_read(double* data_read, const H5::DataSet& dataset, const H5::DataS
 // load_matrix_from_file<double> -> shared_ptr<double[]>
 template <typename T>
 std::shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std_string dataset_name, const int rank, const hsize_t* count, const hsize_t* offset) {
+    assert(loader_inited);
+
     int num_data = 1;
     for (int i = 0; i < rank; i++) {
         num_data *= count[i];

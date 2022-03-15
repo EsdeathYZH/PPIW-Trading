@@ -53,7 +53,7 @@ void init_loader() {
 
 // part should be 1 or 2
 inline H5std_string get_fname(int part, matrix_idx idx) {
-    return FILE_NAME[part - 1][idx];
+    return FILE_NAME[part][idx];
 }
 
 const std::vector<H5std_string> DATASET_NAME = {

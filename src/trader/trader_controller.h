@@ -3,12 +3,11 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+
 #include "H5Cpp.h"
-
 #include "common/config.h"
-#include "common/type.hpp"
 #include "common/thread.h"
-
+#include "common/type.hpp"
 #include "trader/order_sender.h"
 #include "trader/trade_receiver.h"
 
@@ -57,7 +56,7 @@ class SharedTradeInfo {
 };
 
 class TraderController : public ubi_thread {
-public:
+   public:
     TraderController();
 
     void load_data();
@@ -68,19 +67,19 @@ public:
 
     void update_if_hooked(const stock_code_t stock_code, const trade_idx_t trade_idx, const volume_t volume);
 
-protected:
+   protected:
     std::vector<std::vector<price_t>> price_limits;
     std::vector<std::unordered_map<order_id_t, HookTarget>> hook;
     std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> hooked_trade;
     std::vector<std::vector<SortStruct>> sorted_order_id;
 
     // read a NX_SUB*NY_SUB*NZ_SUB matrix
-    const int NX_SUB = Config::loader_nx_matrix;
-    const int NY_SUB = Config::loader_ny_matrix;
-    const int NZ_SUB = Config::loader_nz_matrix;
+    const int NX_SUB;
+    const int NY_SUB;
+    const int NZ_SUB;
     const int RANK = 3;
 
-    hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
+    hsize_t count[3];
     hsize_t offset[3] = {0, 0, 0};
     ubiquant::OrderInfoMatrix oim;
 

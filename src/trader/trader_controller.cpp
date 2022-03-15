@@ -9,21 +9,24 @@ namespace ubiquant {
 extern volatile bool work_flag;
 
 TraderController::TraderController()
-    : next_sorted_struct_idx(Config::stock_num, 0) {
+    : next_sorted_struct_idx(Config::stock_num, 0), NX_SUB(Config::loader_nx_matrix), NY_SUB(Config::loader_ny_matrix), NZ_SUB(Config::loader_nz_matrix) {
     // load order data from disk
+    count[0] = NX_SUB;
+    count[1] = NY_SUB;
+    count[2] = NZ_SUB;
     load_data();
 
     // init shared info
     sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
 
     // init order sender & trade receiver
-    for(int i = 0; i < Config::exchange_num; i++) {
+    for (int i = 0; i < Config::exchange_num; i++) {
         order_senders_.push_back(std::make_shared<TraderOrderSender>(i));
     }
     trade_receiver_ = std::make_shared<TraderTradeReceiver>();
 
     // start sender & recevier
-    for(int i = 0; i < Config::exchange_num; i++) {
+    for (int i = 0; i < Config::exchange_num; i++) {
         order_senders_[i]->start();
     }
     trade_receiver_->start();

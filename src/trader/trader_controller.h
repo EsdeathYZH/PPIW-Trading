@@ -74,10 +74,10 @@ protected:
     std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> hooked_trade;
     std::vector<std::vector<SortStruct>> sorted_order_id;
 
-    // read a 500x1000x1000 matrix
-    const int NX_SUB = 500;
-    const int NY_SUB = 1000;
-    const int NZ_SUB = 1000;
+    // read a NX_SUB*NY_SUB*NZ_SUB matrix
+    const int NX_SUB = Config::loader_nx_matrix;
+    const int NY_SUB = Config::loader_ny_matrix;
+    const int NZ_SUB = Config::loader_nz_matrix;
     const int RANK = 3;
 
     hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};

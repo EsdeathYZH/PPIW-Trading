@@ -21,7 +21,7 @@ public:
 
 protected:
     // socket client
-    std::shared_ptr<MessageSender> msg_sender_;
+    std::vector<std::shared_ptr<MessageSender>> msg_senders_;
 
     // msg queue
     BlockQueue<std::string> msg_queue_;

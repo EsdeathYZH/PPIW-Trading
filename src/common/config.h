@@ -33,14 +33,9 @@ public:
     static int loader_ny_matrix __attribute__((weak));
     static int loader_nz_matrix __attribute__((weak));
 
-    static std::string trader0_addr;
-    static std::string trader1_addr;
-    static std::string exchange0_addr;
-    static std::string exchange1_addr;
-    static std::vector<std::pair<int, int>> trader0_exchange0;
-    static std::vector<std::pair<int, int>> trader0_exchange1;
-    static std::vector<std::pair<int, int>> trader1_exchange0;
-    static std::vector<std::pair<int, int>> trader1_exchange1;
+    static std::vector<std::string> traders_addr;
+    static std::vector<std::string> exchanges_addr;
+    static std::vector<std::vector<std::vector<std::pair<int, int>>>> trader_port2exchange_port;
 };
 
 static bool set_immutable_config(std::string cfg_name, std::string value)
@@ -168,6 +163,11 @@ static void load_network_config(std::string fname)
         exit(0);
     }
 
+    // hard code
+    Config::traders_addr.resize(2);
+    Config::exchanges_addr.resize(2);
+    Config::trader_port2exchange_port.resize(2, std::vector<std::vector<std::pair<int, int>>>(2));
+
     std::string line, row, val;
     while (std::getline(file, line)) {
         if (boost::starts_with(line, "#") || line.empty())
@@ -176,29 +176,29 @@ static void load_network_config(std::string fname)
         std::istringstream iss(line);
         iss >> row;
         if(row == "trader0") {
-            iss >> Config::trader0_addr;
+            iss >> Config::traders_addr[0];
         } else if(row == "trader1") {
-            iss >> Config::trader1_addr;
+            iss >> Config::traders_addr[1];
         } else if(row == "exchange0") {
-            iss >> Config::exchange0_addr;
+            iss >> Config::exchanges_addr[0];
         } else if(row == "exchange1") {
-            iss >> Config::exchange1_addr;
+            iss >> Config::exchanges_addr[1];
         } else if(row == "trader0:exchange0") {
             int trader_port, exchange_port;
             iss >> trader_port >> exchange_port;
-            Config::trader0_exchange0.push_back({trader_port, exchange_port});
+            Config::trader_port2exchange_port[0][0].push_back({trader_port, exchange_port});
         } else if(row == "trader0:exchange1") {
             int trader_port, exchange_port;
             iss >> trader_port >> exchange_port;
-            Config::trader0_exchange1.push_back({trader_port, exchange_port});
+            Config::trader_port2exchange_port[0][1].push_back({trader_port, exchange_port});
         } else if(row == "trader1:exchange0") {
             int trader_port, exchange_port;
             iss >> trader_port >> exchange_port;
-            Config::trader1_exchange0.push_back({trader_port, exchange_port});
+            Config::trader_port2exchange_port[1][0].push_back({trader_port, exchange_port});
         } else if(row == "trader1:exchange1") {
             int trader_port, exchange_port;
             iss >> trader_port >> exchange_port;
-            Config::trader1_exchange1.push_back({trader_port, exchange_port});
+            Config::trader_port2exchange_port[1][1].push_back({trader_port, exchange_port});
         } else {
             logstream(LOG_ERROR) << "Unsupport item:" << row << LOG_endl;
         }
@@ -250,24 +250,24 @@ static void print_config(void)
     std::cout << "loader_nz_matrix: "         << Config::loader_nz_matrix  << LOG_endl;
 
     // print network config
-    std::cout << "trader0_addr: "         << Config::trader0_addr  << LOG_endl;
-    std::cout << "trader1_addr: "         << Config::trader0_addr  << LOG_endl;
-    std::cout << "exchange0_addr: "       << Config::exchange0_addr  << LOG_endl;
-    std::cout << "exchange1_addr: "       << Config::exchange1_addr  << LOG_endl;
+    std::cout << "trader0_addr: "         << Config::traders_addr[0]  << LOG_endl;
+    std::cout << "trader1_addr: "         << Config::traders_addr[1]  << LOG_endl;
+    std::cout << "exchange0_addr: "       << Config::exchanges_addr[0]  << LOG_endl;
+    std::cout << "exchange1_addr: "       << Config::exchanges_addr[1]  << LOG_endl;
     std::cout << "trader0->exchange0 port mapping: " << LOG_endl;
-    for(auto& [trader_port, exchange_port] : Config::trader0_exchange0) {
+    for(auto& [trader_port, exchange_port] : Config::trader_port2exchange_port[0][0]) {
         std::cout << trader_port << "->" << exchange_port << LOG_endl;
     }
     std::cout << "trader0->exchange1 port mapping: " << LOG_endl;
-    for(auto& [trader_port, exchange_port] : Config::trader0_exchange1) {
+    for(auto& [trader_port, exchange_port] : Config::trader_port2exchange_port[0][1]) {
         std::cout << trader_port << "->" << exchange_port << LOG_endl;
     }
     std::cout << "trader1->exchange0 port mapping: " << LOG_endl;
-    for(auto& [trader_port, exchange_port] : Config::trader1_exchange0) {
+    for(auto& [trader_port, exchange_port] : Config::trader_port2exchange_port[1][0]) {
         std::cout << trader_port << "->" << exchange_port << LOG_endl;
     }
     std::cout << "trader1->exchange1 port mapping: " << LOG_endl;
-    for(auto& [trader_port, exchange_port] : Config::trader1_exchange1) {
+    for(auto& [trader_port, exchange_port] : Config::trader_port2exchange_port[1][1]) {
         std::cout << trader_port << "->" << exchange_port << LOG_endl;
     }
     std::cout << "----------- END ------------" << LOG_endl;

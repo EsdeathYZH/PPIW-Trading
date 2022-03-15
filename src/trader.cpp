@@ -12,8 +12,6 @@
 #include "common/config.h"
 #include "common/console.hpp"
 
-#include "trader/order_sender.h"
-#include "trader/trade_receiver.h"
 #include "trader/trader_controller.h"
 
 #include "utils/timer.hpp"
@@ -89,12 +87,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Trader[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
-    Global<TraderOrderSender>::New();
-    Global<TraderTradeReceiver>::New();
+
     Global<TraderController>::New();
 
-    Global<TraderOrderSender>::Get()->start();
-    Global<TraderTradeReceiver>::Get()->start();
     Global<TraderController>::Get()->start();
 
     run_console();

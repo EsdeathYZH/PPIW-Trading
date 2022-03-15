@@ -4,15 +4,23 @@ namespace ubiquant {
 
 ExchangeTradeSender::ExchangeTradeSender() 
     : msg_queue_(Config::sliding_window_size * Config::stock_num / 2){
-    
+    // init msg senders
+    for(int i = 0; i < Config::trader_num; i++) {
+        std::vector<std::pair<int, int>> port_pairs;
+        auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
+        port_pairs.push_back({channels[2].second, channels[2].first});
+        msg_senders_.push_back(std::make_shared<MessageSender>(Config::traders_addr[i], port_pairs));
+    }
 }
 
 void ExchangeTradeSender::run() {
     logstream(LOG_EMPH) << "Exchange TradeSender is running..." << LOG_endl;
     while(true) {
         auto msg = msg_queue_.take();
-        if(!msg_sender_->send(msg)) {
-            logstream(LOG_ERROR) << "Message sending error!" << LOG_endl;
+        for(auto& sender : msg_senders_) {
+            if(!sender->send(msg)) {
+                logstream(LOG_ERROR) << "Message sending error!" << LOG_endl;
+            }
         }
     }
 }

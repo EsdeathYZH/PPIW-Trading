@@ -17,14 +17,9 @@ int Config::loader_ny_matrix = 1000;
 int Config::loader_nz_matrix = 1000;
 
 
-std::vector<std::pair<int, int>> Config::trader0_exchange0;
-std::vector<std::pair<int, int>> Config::trader0_exchange1;
-std::vector<std::pair<int, int>> Config::trader1_exchange0;
-std::vector<std::pair<int, int>> Config::trader1_exchange1;
+std::vector<std::vector<std::vector<std::pair<int, int>>>> Config::trader_port2exchange_port;
 
-std::string Config::trader0_addr;
-std::string Config::trader1_addr;
-std::string Config::exchange0_addr;
-std::string Config::exchange1_addr;
+std::vector<std::string> Config::traders_addr;
+std::vector<std::string> Config::exchanges_addr;
 
 } // namespace wukong

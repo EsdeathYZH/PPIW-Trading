@@ -44,23 +44,23 @@ public:
     }
 
     std::string recv() {
-        zmq::message_t msg;
-
-        if (!receivers[ports[0]]->recv(&msg)) {
-            logstream(LOG_ERROR) << "failed to recv msg ("
-                                 << strerror(errno) << ")" << LOG_endl;
-            assert(false);
+        std::string msg;
+        int idx = 0;
+        // poll all recv ports
+        while(true) {
+            if (tryrecv(idx, msg)) {
+                return msg;
+            }
+            idx = (idx + 1) % ports.size();
         }
-
-        return std::string((char *)msg.data(), msg.size());
     }
 
 
-    bool tryrecv(std::string &str) {
+    bool tryrecv(int idx, std::string &str) {
         zmq::message_t msg;
         bool success = false;
 
-        if (success = receivers[ports[0]]->recv(&msg, ZMQ_NOBLOCK))
+        if (success = receivers[ports[idx]]->recv(&msg, ZMQ_NOBLOCK))
             str = std::string((char *)msg.data(), msg.size());
 
         return success;

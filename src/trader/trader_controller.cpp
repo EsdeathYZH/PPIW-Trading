@@ -13,7 +13,20 @@ TraderController::TraderController()
     // load order data from disk
     load_data();
 
+    // init shared info
     sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
+
+    // init order sender & trade receiver
+    for(int i = 0; i < Config::exchange_num; i++) {
+        order_senders_.push_back(std::make_shared<TraderOrderSender>(i));
+    }
+    trade_receiver_ = std::make_shared<TraderTradeReceiver>();
+
+    // start sender & recevier
+    for(int i = 0; i < Config::exchange_num; i++) {
+        order_senders_[i]->start();
+    }
+    trade_receiver_->start();
 }
 
 void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {
@@ -82,7 +95,8 @@ void TraderController::run() {
 
         // send order
         for (auto& order : order_to_send) {
-            Global<TraderOrderSender>::Get()->put_order(order);
+            int idx = order.stk_code % Config::exchange_num;
+            order_senders_[idx]->put_order(order);
         }
     }
 }

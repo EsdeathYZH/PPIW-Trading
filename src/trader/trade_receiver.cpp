@@ -28,6 +28,13 @@ TraderTradeReceiver::TraderTradeReceiver() {
         // NOTICE: trade_idx starts from 1
         trade_idxs_[code] = 1;
     }
+
+    // init msg receivers
+    std::vector<int> ports;
+    for(int i = 0; i < Config::exchange_num; i++) {
+        ports.push_back(Config::trader_port2exchange_port[Config::partition_idx][i][2].first);
+    }
+    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
 }
 
 TraderTradeReceiver::~TraderTradeReceiver()

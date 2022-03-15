@@ -4,7 +4,13 @@
 namespace ubiquant {
 
 ExchangeOrderReceiver::ExchangeOrderReceiver() {
-    
+    // init msg receivers
+    std::vector<int> ports;
+    for(int i = 0; i < Config::trader_num; i++) {
+        ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][0].second);
+        ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][1].second);
+    }
+    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
 }
 
 void ExchangeOrderReceiver::run() {

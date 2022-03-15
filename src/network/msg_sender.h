@@ -23,19 +23,19 @@ class MessageSender {
 private:
     zmq::context_t context;
     std::string addr;
-    std::vector<int> ports;
+    std::vector<std::pair<int, int>> channels;
     std::unordered_map<int, zmq::socket_t*> senders;
 
 public:
-    MessageSender(std::string receiver_addr, std::vector<int> receiver_ports) 
-        : context(1), addr(receiver_addr), ports(receiver_ports) {
+    MessageSender(std::string receiver_addr, std::vector<std::pair<int, int>> port_pairs) 
+        : context(1), addr(receiver_addr), channels(port_pairs) {
         // set send socket
-        for(auto port : receiver_ports) {
+        for(auto [src_port, dst_port] : channels) {
             // new socket on-demand
             char address[32] = "";
-            snprintf(address, 32, "tcp://%s:%d", receiver_addr.c_str(), port);
-            senders[port] = new zmq::socket_t(context, ZMQ_PUSH);
-            senders[port]->connect(address);
+            snprintf(address, 32, "tcp://%s:%d", receiver_addr.c_str(), dst_port);
+            senders[dst_port] = new zmq::socket_t(context, ZMQ_PUSH);
+            senders[dst_port]->connect(address);
         }
     }
 
@@ -51,10 +51,11 @@ public:
         zmq::message_t msg(str.length());
         memcpy((void *)msg.data(), str.c_str(), str.length());
 
-        int result = senders[ports[0]]->send(msg, ZMQ_DONTWAIT);
+        // TODO: use two channels
+        int result = senders[channels[0].second]->send(msg, ZMQ_DONTWAIT);
         if (result < 0) {
             logstream(LOG_ERROR) << "failed to send msg to ["
-                                 << addr << ":" << ports[0] << "] "
+                                 << addr << ":" << channels[0].second << "] "
                                  << strerror(errno) << LOG_endl;
         }
 

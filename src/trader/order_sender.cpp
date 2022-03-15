@@ -2,9 +2,17 @@
 
 namespace ubiquant {
 
-TraderOrderSender::TraderOrderSender() 
-    : order_queue_(Config::sliding_window_size*Config::stock_num) {
-
+TraderOrderSender::TraderOrderSender(int exchange_idx) 
+    : exchange_idx_(exchange_idx), 
+      order_queue_(Config::sliding_window_size*Config::stock_num/Config::exchange_num) {
+    
+    // init msg sender
+    std::vector<std::pair<int, int>> port_pairs;
+    auto& channels = Config::trader_port2exchange_port[Config::partition_idx][exchange_idx_];
+    // we use the first two channels
+    port_pairs.push_back(channels[0]);
+    port_pairs.push_back(channels[1]);
+    msg_sender_ = std::make_shared<MessageSender>(Config::exchanges_addr[exchange_idx_], port_pairs);
 }
 
 void TraderOrderSender::run() {

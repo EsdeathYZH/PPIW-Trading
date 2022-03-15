@@ -9,6 +9,9 @@
 #include "common/type.hpp"
 #include "common/thread.h"
 
+#include "trader/order_sender.h"
+#include "trader/trade_receiver.h"
+
 namespace ubiquant {
 
 // Usage: auto sti = std::make_shared<SharedTradeInfo>(hooked_trade);
@@ -83,6 +86,12 @@ protected:
 
     std::vector<int> next_sorted_struct_idx;
     std::shared_ptr<SharedTradeInfo> sharedInfo;
+
+    // order sender (exchange_num)
+    std::vector<std::shared_ptr<TraderOrderSender>> order_senders_;
+
+    // order sender (1)
+    std::shared_ptr<TraderTradeReceiver> trade_receiver_;
 };
 
 }  // namespace ubiquant

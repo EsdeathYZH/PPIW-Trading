@@ -11,13 +11,15 @@ namespace ubiquant {
 
 class TraderOrderSender : public ubi_thread {
 public:
-    TraderOrderSender();
+    TraderOrderSender(int exchange_idx);
 
     void run() override;
 
     void put_order(Order& order);
 
 protected:
+    int exchange_idx_;
+    
     // socket client
     std::shared_ptr<MessageSender> msg_sender_;
 

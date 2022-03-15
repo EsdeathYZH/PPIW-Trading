@@ -17,13 +17,15 @@ public:
 public:
     SlidingWindow() : capacity_(0) {}
     SlidingWindow(const int capacity)  
-        : data_(capacity), avaliable_(capacity_, false), capacity_(capacity) {}
+        : data_(capacity), avaliable_(capacity, false), capacity_(capacity) {}
     ~SlidingWindow(){}
 
     SlidingWindow(const SlidingWindow &) = delete;
     SlidingWindow &operator = (const SlidingWindow &) = delete;
     SlidingWindow(SlidingWindow &&) = default;
     SlidingWindow &operator = (SlidingWindow &&) = default;
+
+    inline int get_capacity() { return capacity_; }
 
 public:
     // blocking api

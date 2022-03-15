@@ -13,9 +13,9 @@ TraderTradeReceiver::TraderTradeReceiver() {
         stk_codes.push_back(i);
     }
 
-    ASSERT(!Config::data_folder.empty());
+    ASSERT(!Config::trade_output_folder.empty());
     for(auto code : stk_codes) {
-        std::string path = Config::data_folder + "/trade_res." + std::to_string(code);
+        std::string path = Config::trade_output_folder + "/trade_res." + std::to_string(code);
         trade_fds_[code] = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0640);
         if (trade_fds_[code] == EMPTY_FD)
             throw std::runtime_error("open wal file error.");

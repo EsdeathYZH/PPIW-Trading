@@ -127,9 +127,9 @@ std::shared_ptr<T[]> load_matrix_from_file(const H5std_string fname, const H5std
 
 std::vector<std::vector<SortStruct>> load_order_id_from_file(int part) {
     // read a 500x1000x1000 matrix
-    const int NX_SUB = 500;
-    const int NY_SUB = 1000;
-    const int NZ_SUB = 1000;
+    const int NX_SUB = Config::loader_nx_matrix;
+    const int NY_SUB = Config::loader_ny_matrix;
+    const int NZ_SUB = Config::loader_nz_matrix;
     const int RANK = 3;
 
     hsize_t offset[3] = {0, 0, 0};

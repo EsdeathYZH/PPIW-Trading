@@ -21,6 +21,7 @@ public:
     // e.g., static int &num_threads() { static int _num_threads = 2; return _num_threads; }
 
     static std::string data_folder __attribute__((weak));
+    static std::string trade_output_folder __attribute__((weak));
     static std::string network_config_file __attribute__((weak));
 
     static int partition_idx __attribute__((weak));
@@ -28,6 +29,9 @@ public:
     static int stock_num __attribute__((weak));
     static int trader_num __attribute__((weak));
     static int exchange_num __attribute__((weak));
+    static int loader_nx_matrix __attribute__((weak));
+    static int loader_ny_matrix __attribute__((weak));
+    static int loader_nz_matrix __attribute__((weak));
 
     static std::string trader0_addr;
     static std::string trader1_addr;
@@ -54,14 +58,41 @@ static bool set_immutable_config(std::string cfg_name, std::string value)
         // force a "/" at the end of Config::data_folder.
         if (Config::data_folder[Config::data_folder.length() - 1] != '/')
             Config::data_folder = Config::data_folder + "/";
+    } else if (cfg_name == "trade_output_folder") {
+        Config::trade_output_folder = value;
+
+        // make sure to check that the Config::trade_output_folder is non-empty.
+        if (Config::trade_output_folder.length() == 0) {
+            logstream(LOG_ERROR) << "the directory path of RDF data can not be empty!"
+                                 << "You should set \"trade_output_folder\" in config file." << LOG_endl;
+            exit(-1);
+        }
+
+        // force a "/" at the end of Config::trade_output_folder.
+        if (Config::trade_output_folder[Config::trade_output_folder.length() - 1] != '/')
+            Config::trade_output_folder = Config::trade_output_folder + "/";
     } else if (cfg_name == "network_config_file") {
         Config::network_config_file = value;
-        // make sure to check that the Config::data_folder is non-empty.
+        // make sure to check that the Config::network_config_file is non-empty.
         if (Config::network_config_file.length() == 0) {
             logstream(LOG_ERROR) << "the file name of network config can not be empty!"
                                  << "You should set \"network_config_file\" in config file." << LOG_endl;
             exit(-1);
         }
+    } else if (cfg_name == "sliding_window_size") {
+        Config::sliding_window_size = atoi(value.c_str());
+    } else if (cfg_name == "stock_num") {
+        Config::stock_num = atoi(value.c_str());
+    } else if (cfg_name == "trader_num") {
+        Config::trader_num = atoi(value.c_str());
+    } else if (cfg_name == "exchange_num") {
+        Config::exchange_num = atoi(value.c_str());
+    } else if (cfg_name == "loader_nx_matrix") {
+        Config::loader_nx_matrix = atoi(value.c_str());
+    } else if (cfg_name == "loader_ny_matrix") {
+        Config::loader_ny_matrix = atoi(value.c_str());
+    } else if (cfg_name == "loader_nz_matrix") {
+        Config::loader_nz_matrix = atoi(value.c_str());
     } else {
         return false;
     }
@@ -71,13 +102,13 @@ static bool set_immutable_config(std::string cfg_name, std::string value)
 
 static bool set_mutable_config(std::string cfg_name, std::string value)
 {
-    if (cfg_name == "sliding_window_size") {
-        Config::sliding_window_size = atoi(value.c_str());
-    } else {
-        return false;
-    }
+    // if (cfg_name == "sliding_window_size") {
+    //     Config::sliding_window_size = atoi(value.c_str());
+    // } else {
+    //     return false;
+    // }
 
-    return true;
+    return false;
 }
 
 static void str2items(std::string str, std::map<std::string, std::string> &items)
@@ -194,7 +225,7 @@ static void load_config(std::string fname)
         }
     }
 
-    load_network_config(Config::data_folder + Config::network_config_file);
+    load_network_config(Config::network_config_file);
 
     return;
 }
@@ -214,6 +245,9 @@ static void print_config(void)
     std::cout << "stock_num: "            << Config::stock_num  << LOG_endl;
     std::cout << "trader_num: "           << Config::trader_num  << LOG_endl;
     std::cout << "exchange_num: "         << Config::exchange_num  << LOG_endl;
+    std::cout << "loader_nx_matrix: "         << Config::loader_nx_matrix  << LOG_endl;
+    std::cout << "loader_ny_matrix: "         << Config::loader_ny_matrix  << LOG_endl;
+    std::cout << "loader_nz_matrix: "         << Config::loader_nz_matrix  << LOG_endl;
 
     // print network config
     std::cout << "trader0_addr: "         << Config::trader0_addr  << LOG_endl;

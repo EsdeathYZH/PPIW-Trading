@@ -155,15 +155,15 @@ std::vector<std::vector<SortStruct>> load_order_id_from_file(int part) {
     uint64_t end = timer::get_usec();
     std::cout << "Sort order_id" << part << " finish in " << (end - start) / 1000 / 1000 << " sec" << std::endl;
 
-    for (int t = 0; t < Config::stock_num; t++) {
-        for (int i = 0; i < 5; i++) {
-            std::cout << order_id[t][i].order_id << " ("
-                      << order_id[t][i].coor.get_x() << ","
-                      << order_id[t][i].coor.get_y() << ","
-                      << order_id[t][i].coor.get_z() << ") | ";
-        }
-        std::cout << std::endl;
-    }
+    // for (int t = 0; t < Config::stock_num; t++) {
+    //     for (int i = 0; i < 5; i++) {
+    //         std::cout << order_id[t][i].order_id << " ("
+    //                   << order_id[t][i].coor.get_x() << ","
+    //                   << order_id[t][i].coor.get_y() << ","
+    //                   << order_id[t][i].coor.get_z() << ") | ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     return order_id;
 }
@@ -195,18 +195,18 @@ std::pair<std::vector<std::unordered_map<order_id_t, HookTarget>>, std::shared_p
         }
     }
 
-    for (int t = 0; t < Config::stock_num; t++) {
-        for (auto it = hook[t].begin(); it != hook[t].end(); it++) {
-            std::cout << it->first << " ("
-                      << it->second.target_stk_code << ","
-                      << it->second.target_trade_idx << ","
-                      << it->second.arg << ") | ";
+    // for (int t = 0; t < Config::stock_num; t++) {
+    //     for (auto it = hook[t].begin(); it != hook[t].end(); it++) {
+    //         std::cout << it->first << " ("
+    //                   << it->second.target_stk_code << ","
+    //                   << it->second.target_trade_idx << ","
+    //                   << it->second.arg << ") | ";
 
-            if (distance(hook[t].begin(), it) == 4)
-                break;
-        }
-        std::cout << std::endl;
-    }
+    //         if (distance(hook[t].begin(), it) == 4)
+    //             break;
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     return make_pair(hook, hooked_trade);
 }

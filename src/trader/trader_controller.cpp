@@ -52,14 +52,14 @@ void TraderController::load_data() {
     oim.price_matrix = load_matrix_from_file<price_t>(get_fname(Config::partition_idx, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
     oim.volume_matrix = load_matrix_from_file<volume_t>(get_fname(Config::partition_idx, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
 
-    for (int t = 0; t < Config::stock_num; t++) {
-        for (int i = 0; i < 5; i++) {
-            Order order = oim.generate_order(t + 1, sorted_order_id[t][i], NX_SUB, NY_SUB, NZ_SUB);
-            order.print();
-            std::cout << " ";
-        }
-        std::cout << std::endl;
-    }
+    // for (int t = 0; t < Config::stock_num; t++) {
+    //     for (int i = 0; i < 5; i++) {
+    //         Order order = oim.generate_order(t + 1, sorted_order_id[t][i], NX_SUB, NY_SUB, NZ_SUB);
+    //         order.print();
+    //         std::cout << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 }
 
 void TraderController::run() {

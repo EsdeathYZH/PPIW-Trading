@@ -19,8 +19,8 @@ TraderTradeReceiver::TraderTradeReceiver() {
         trade_fds_[code] = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0640);
         if (trade_fds_[code] == EMPTY_FD)
             throw std::runtime_error("open wal file error.");
-        if (ftruncate(trade_fds_[code], FILE_TRUNC_SIZE) != 0)
-            throw std::runtime_error("ftruncate wal file error.");
+        // if (ftruncate(trade_fds_[code], FILE_TRUNC_SIZE) != 0)
+        //     throw std::runtime_error("ftruncate wal file error.");
 
         trade_buffer_[code] = std::vector<Trade>();
         trade_buffer_[code].reserve(TRADE_BUF_THRESHOLD);
@@ -48,6 +48,7 @@ TraderTradeReceiver::~TraderTradeReceiver()
 }
 
 void TraderTradeReceiver::run() {
+    while(!Global<TraderController>::Get() || !Global<TraderController>::Get()->is_inited()) {}
     logstream(LOG_EMPH) << "Trader TradeReceiver is running..." << LOG_endl;
     while(true) {
         std::string msg = msg_receiver_->recv();
@@ -72,7 +73,7 @@ void TraderTradeReceiver::process_trade_result(std::string& msg) {
     get_elem_from_buf(msg.c_str(), offset, cnt);
     trades.resize(cnt);
     for(auto& trade : trades) {
-        trade.from_str(msg, offset);
+        get_elem_from_buf(msg.c_str(), offset, trade);
     }
     
     for(auto& trade : trades) {
@@ -123,7 +124,7 @@ void TraderTradeReceiver::process_order_ack(std::string& msg) {
     get_elem_from_buf(msg.c_str(), offset, cnt);
     acks.resize(cnt);
     for(auto& ack : acks) {
-        ack.from_str(msg, offset);
+        get_elem_from_buf(msg.c_str(), offset, ack);
     }
 
     // update sliding window start in controller

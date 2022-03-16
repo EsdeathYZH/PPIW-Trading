@@ -32,7 +32,7 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     uint32_t cnt = 1;
     trade_msg.append((char*)&msg_code, sizeof(uint32_t));
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
-    trade.append_to_str(trade_msg);
+    trade_msg.append((char*)&trade, sizeof(trade));
     msg_queue_.put(trade_msg);
 }
 
@@ -43,7 +43,7 @@ void ExchangeTradeSender::put_order_ack(OrderAck& ack) {
     uint32_t cnt = 1;
     ack_msg.append((char*)&msg_code, sizeof(uint32_t));
     ack_msg.append((char*)&cnt, sizeof(uint32_t));
-    ack.append_to_str(ack_msg);
+    ack_msg.append((char*)&ack, sizeof(ack));
     msg_queue_.put(ack_msg);
 }
 

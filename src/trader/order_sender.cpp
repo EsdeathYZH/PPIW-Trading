@@ -1,4 +1,5 @@
 #include "order_sender.h"
+#include "trader_controller.h"
 
 namespace ubiquant {
 
@@ -17,6 +18,7 @@ TraderOrderSender::TraderOrderSender(int exchange_idx)
 
 void TraderOrderSender::run() {
     logstream(LOG_EMPH) << "Trader OrderSender is running..." << LOG_endl;
+    while(!Global<TraderController>::Get() || !Global<TraderController>::Get()->is_inited()) {}
     while(true) {
         std::string order_msg;
         uint32_t msg_code = MSG_TYPE::ORDER_MSG;
@@ -24,8 +26,11 @@ void TraderOrderSender::run() {
         order_msg.append((char*)&msg_code, sizeof(uint32_t));
         order_msg.append((char*)&cnt, sizeof(uint32_t));
         Order order;
-        while(order_queue_.poll(order)) {
-            order.append_to_str(order_msg);
+        while(!cnt) {
+            if(!order_queue_.poll(order)) continue;
+            std::cout << "Send a order:" << std::endl;
+            order.print();
+            order_msg.append((char*)&order, sizeof(order));
             cnt++;
             if(cnt >= Config::sliding_window_size) break;
         }

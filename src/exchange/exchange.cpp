@@ -34,7 +34,13 @@ void Exchange::start() {
 void Exchange::receiveOrder(Order& order) {
     // NOTICE: order id starts from 1
     int window_idx = (order.order_id-1) % Config::sliding_window_size;
-    order_buffer.at(order.stk_code).put(order, window_idx);
+    try {
+        order_buffer.at(order.stk_code).put(order, window_idx);
+    }
+    catch(...) {
+        std::cerr << "throwing an exception when at: stk code=" << order.stk_code << std::endl;
+        order.print();
+    }
 }
 
 // Stock exchange will call this function

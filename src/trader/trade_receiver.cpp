@@ -77,6 +77,7 @@ void TraderTradeReceiver::process_trade_result(std::string& msg) {
     }
     
     for(auto& trade : trades) {
+        trade.print();
         // update hook in controller
         Global<TraderController>::Get()->update_if_hooked(trade.stk_code, trade_idxs_[trade.stk_code], trade.volume);
         trade_idxs_[trade.stk_code]++;

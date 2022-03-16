@@ -33,6 +33,23 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     trade_msg.append((char*)&msg_code, sizeof(uint32_t));
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
     trade_msg.append((char*)&trade, sizeof(trade));
+
+    std::cout << "before serial trade " << std::endl;
+    trade.print();
+    std::cout << "after serial trade " << std::endl;
+
+    // TODO!: debug
+    std::vector<Trade> out_trades;
+    size_t out_offset = sizeof(uint32_t); // skip msg code
+    uint32_t out_cnt = 0;
+    get_elem_from_buf(trade_msg.c_str(), out_offset, out_cnt);
+    out_trades.resize(out_cnt);
+    std::cout << "out cnt=" << out_cnt << std::endl;
+    for(auto& trade : out_trades) {
+        get_elem_from_buf(trade_msg.c_str(), out_offset, trade);
+        trade.print();
+    }
+
     msg_queue_.put(trade_msg);
 }
 

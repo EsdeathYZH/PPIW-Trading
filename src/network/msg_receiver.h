@@ -35,6 +35,8 @@ public:
             char address[32] = "";
             snprintf(address, 32, "tcp://*:%d", port);
             receivers[port]->bind(address);
+            if(errno) std::cout << "Errno:" << errno << std::endl;
+            std::cout << "Bind on port:" << port << std::endl;
         }
     }
 

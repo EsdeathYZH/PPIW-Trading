@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
     std::cout << "Exchange[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
-    Global<ExchangeTradeSender>::New();
     Global<ExchangeOrderReceiver>::New();
+    Global<ExchangeTradeSender>::New();
     Global<Exchange>::New();
 
     Global<ExchangeTradeSender>::Get()->start();

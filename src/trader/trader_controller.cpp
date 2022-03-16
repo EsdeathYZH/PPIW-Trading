@@ -20,16 +20,16 @@ TraderController::TraderController()
     sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
 
     // init order sender & trade receiver
+    trade_receiver_ = std::make_shared<TraderTradeReceiver>();
     for (int i = 0; i < Config::exchange_num; i++) {
         order_senders_.push_back(std::make_shared<TraderOrderSender>(i));
     }
-    trade_receiver_ = std::make_shared<TraderTradeReceiver>();
 
     // start sender & recevier
+    trade_receiver_->start();
     for (int i = 0; i < Config::exchange_num; i++) {
         order_senders_[i]->start();
     }
-    trade_receiver_->start();
 }
 
 void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {

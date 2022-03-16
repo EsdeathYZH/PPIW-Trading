@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 #include "common/config.h"
 
@@ -35,7 +36,17 @@ public:
             char address[32] = "";
             snprintf(address, 32, "tcp://%s:%d", receiver_addr.c_str(), dst_port);
             senders[dst_port] = new zmq::socket_t(context, ZMQ_PUSH);
-            senders[dst_port]->connect(address);
+            while(true) {
+                senders[dst_port]->connect(address);
+                if (errno == EAGAIN) {
+                    std::this_thread::sleep_for(std::chrono::seconds(3));
+                    std::cout << "Try to connect to " << receiver_addr << ":" << dst_port << " ..." << std::endl;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            std::cout << "Connect to " << receiver_addr << ":" << dst_port << " successfully!" << std::endl;
         }
     }
 
@@ -52,7 +63,7 @@ public:
         memcpy((void *)msg.data(), str.c_str(), str.length());
 
         // TODO: use two channels
-        int result = senders[channels[0].second]->send(msg, ZMQ_DONTWAIT);
+        int result = senders[channels[0].second]->send(msg);
         if (result < 0) {
             logstream(LOG_ERROR) << "failed to send msg to ["
                                  << addr << ":" << channels[0].second << "] "

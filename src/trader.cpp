@@ -38,7 +38,7 @@ void printTraceExit(int sig) {
 void sigsegv_handler(int sig) {
   std::lock_guard<std::mutex> lock(exit_lock);
   fprintf(stderr, "[Trader] Meet a segmentation fault!\n");
-  printTraceExit(sig);
+  // printTraceExit(sig);
   ubiquant::work_flag = false;
   exit(-1);
 }

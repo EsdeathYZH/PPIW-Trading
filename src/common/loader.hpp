@@ -190,7 +190,7 @@ std::pair<std::vector<std::unordered_map<order_id_t, HookTarget>>, std::shared_p
             int target_trade_idx = data_read[x * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + 2];  // start at 1
             int arg = data_read[x * (NY_SUB * NZ_SUB) + y * (NZ_SUB) + 3];
 
-            hook[stock_id][self_order_id] = {target_stk_code - 1, target_trade_idx, arg};
+            hook[stock_id][self_order_id] = {target_stk_code, target_trade_idx, arg};
             (*hooked_trade)[target_stk_code - 1][target_trade_idx] = -1;
         }
     }

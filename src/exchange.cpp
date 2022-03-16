@@ -36,15 +36,15 @@ void printTraceExit(int sig) {
 
 void sigsegv_handler(int sig) {
   std::lock_guard<std::mutex> lock(exit_lock);
-  fprintf(stderr, "[Trader] Meet a segmentation fault!\n");
-  printTraceExit(sig);
+  fprintf(stderr, "[Exchange] Meet a segmentation fault!\n");
+  // printTraceExit(sig);
   ubiquant::work_flag = false;
   exit(-1);
 }
 
 void sigint_handler(int sig) {
   std::lock_guard<std::mutex> lock(exit_lock);
-  fprintf(stderr, "[Trader] Meet an interrupt!\n");
+  fprintf(stderr, "[Exchange] Meet an interrupt!\n");
   // printTraceExit(sig);
   ubiquant::work_flag = false;
   exit(-1);
@@ -52,7 +52,7 @@ void sigint_handler(int sig) {
 
 void sigabrt_handler(int sig) {
   std::lock_guard<std::mutex> lock(exit_lock);
-  fprintf(stderr, "[Trader] Meet an assertion failure!\n");
+  fprintf(stderr, "[Exchange] Meet an assertion failure!\n");
   printTraceExit(sig);
   exit(-1);
 }

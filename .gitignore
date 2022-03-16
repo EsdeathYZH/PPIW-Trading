@@ -15,3 +15,5 @@ deps/*/
 # personal script
 push.sh
 config
+deps/boost_1_67_0.tar.gz
+deps/zeromq-4.0.5.tar.gz

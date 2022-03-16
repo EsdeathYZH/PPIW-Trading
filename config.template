@@ -1,6 +1,6 @@
 data_folder     /data/100x1000x1000/
 trade_output_folder     /data/team-7/
-network_config_file     /home/team-7/yzh/awsome-10w/network.host
+network_config_file     /home/team-7/repo/awsome-10w/network.host
 sliding_window_size     100
 stock_num       10
 trader_num      2

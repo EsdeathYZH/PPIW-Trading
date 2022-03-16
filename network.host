@@ -1,7 +1,7 @@
-trader0         127.0.0.1
-trader1         127.0.0.1
-exchange0       127.0.0.1
-exchange1       127.0.0.1
+trader0         10.216.68.189
+trader1         10.216.68.190
+exchange0       10.216.68.191
+exchange1       10.216.68.192
 
 trader0:exchange0       11230   11231
 trader0:exchange0       11232   11233

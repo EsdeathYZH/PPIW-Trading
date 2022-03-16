@@ -10,15 +10,6 @@ extern volatile bool work_flag;
 
 TraderController::TraderController()
     : next_sorted_struct_idx(Config::stock_num, 0), NX_SUB(Config::loader_nx_matrix), NY_SUB(Config::loader_ny_matrix), NZ_SUB(Config::loader_nz_matrix) {
-    // load order data from disk
-    count[0] = NX_SUB;
-    count[1] = NY_SUB;
-    count[2] = NZ_SUB;
-    load_data();
-
-    // init shared info
-    sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
-
     // init order sender & trade receiver
     trade_receiver_ = std::make_shared<TraderTradeReceiver>();
     for (int i = 0; i < Config::exchange_num; i++) {
@@ -30,6 +21,15 @@ TraderController::TraderController()
     for (int i = 0; i < Config::exchange_num; i++) {
         order_senders_[i]->start();
     }
+
+    // load order data from disk
+    count[0] = NX_SUB;
+    count[1] = NY_SUB;
+    count[2] = NZ_SUB;
+    load_data();
+
+    // init shared info
+    sharedInfo = std::make_shared<SharedTradeInfo>(hooked_trade);
 }
 
 void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {

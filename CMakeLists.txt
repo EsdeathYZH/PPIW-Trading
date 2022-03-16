@@ -47,3 +47,6 @@ file(GLOB_RECURSE EXCHANGE_SOURCES
 add_executable(exchange ${EXCHANGE_SOURCES})
 target_link_libraries(exchange zmq ${BOOST_LIBS})
 
+# tools: output_diff
+add_executable(output_diff "src/output_diff.cpp")
+

@@ -77,6 +77,15 @@ struct Trade {
         get_elem_from_buf(buf, offset, *this);
     }
 
+    void print() const {
+        printf("[%d] bid_id: %d\task_id: %d\tprice: %.2f\t, volume: %d\n",
+               stk_code,
+               bid_id,
+               ask_id,
+               price,
+               volume);
+    }
+
     // Trade() = default;
 
     // Trade(const std::string& str) {

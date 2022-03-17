@@ -43,7 +43,7 @@ void TraderOrderSender::run() {
             cnt++;
             // monitor.add_cnt();
             // monitor.print_timely_thpt("Order Sender Throughput");
-            if (cnt >= Config::sliding_window_size) break;
+            if (cnt >= 100) break;
         }
         *((uint32_t*)(order_msg.data() + sizeof(uint32_t))) = cnt;
         if (!msg_sender_->send(order_msg)) {

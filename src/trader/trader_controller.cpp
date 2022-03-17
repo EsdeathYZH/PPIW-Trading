@@ -150,6 +150,9 @@ void TraderController::run() {
             int idx = order.stk_code % Config::exchange_num;
             order_senders_[idx]->put_order(order);
         }
+
+        // release memory
+        std::vector<Order>().swap(order_to_send);
     }
 }
 

@@ -331,18 +331,24 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
      * 依次与对手方前五档价格进行成交
      *
      * NOTE:
-     * 1. 价格相同但是id不同的属于两档
-     * 2. 即使第五档与第六档价位相同，也不再考虑第六档的成交情况，直接撤销
+     * 1. 五档指的是五个不同价格，相同价格属于一档，也就是说需要匹配五个不同价格
      */
     if (order.direction == 1) {
         /* Buy in */
         int left_volume = order.volume;
-        for (int i = 0; i < 5; ++i) {
+        int level_count = 0;
+        int previous_price = INT_MIN;
+        while (true) {
             if (left_volume == 0)
                 break;
             SellRecord *sr = decl_book.querySellFirst();
             if (sr == nullptr)
                 break;
+
+            if (sr->price != previous_price) {
+                if (++level_count > 5)
+                    break;
+            }
 
             if (left_volume < sr->volume) {
                 Trade new_trade = {
@@ -377,12 +383,19 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
     } else if (order.direction == -1) {
         /* Sell out */
         int left_volume = order.volume;
-        for (int i = 0; i < 5; ++i) {
+        int level_count = 0;
+        int previous_price = INT_MIN;
+        while (true) {
             if (left_volume == 0)
                 break;
             BuyRecord *br = decl_book.queryBuyFirst();
             if (br == nullptr)
                 break;
+
+            if (br->price != previous_price) {
+                if (++level_count > 5)
+                    break;
+            }
 
             if (left_volume < br->volume) {
                 Trade new_trade = {

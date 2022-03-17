@@ -7,6 +7,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -203,7 +204,7 @@ static void load_network_config(std::string fname)
             logstream(LOG_ERROR) << "Unsupport item:" << row << LOG_endl;
         }
     }
-    
+
 
     return;
 }

@@ -34,12 +34,14 @@ public:
     }
 
     int insertBuyDecl(BuyRecord& br) {
+        assert(br.volume != 0);
         buy_decls.push_back(br);
         std::push_heap(buy_decls.begin(), buy_decls.end());
         return 0;
     }
 
     int insertSellDecl(SellRecord& sr) {
+        assert(sr.volume != 0);
         sell_decls.push_back(sr);
         std::push_heap(sell_decls.begin(), sell_decls.end());
         return 0;

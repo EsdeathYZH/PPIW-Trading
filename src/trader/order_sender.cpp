@@ -18,7 +18,9 @@ TraderOrderSender::TraderOrderSender(int exchange_idx)
 
 void TraderOrderSender::run() {
     logstream(LOG_EMPH) << "Trader OrderSender is running..." << LOG_endl;
-    while(!Global<TraderController>::Get() || !Global<TraderController>::Get()->is_inited()) {}
+    while(!Global<TraderController>::Get() || !Global<TraderController>::Get()->is_inited()) {
+        usleep(1);
+    }
     while(true) {
         std::string order_msg;
         uint32_t msg_code = MSG_TYPE::ORDER_MSG;

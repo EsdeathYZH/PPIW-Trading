@@ -15,7 +15,9 @@ using price_t = double;
 using volume_t = int;
 using trade_idx_t = int;
 
-enum MSG_TYPE { ORDER_MSG = 1, TRADE_MSG = 2, ORDER_ACK_MSG = 3 };
+enum MSG_TYPE { ORDER_MSG = 1,
+                TRADE_MSG = 2,
+                ORDER_ACK_MSG = 3 };
 
 template <typename T>
 void get_elem_from_buf(const char* buf, size_t& offset, T& elem) {
@@ -64,8 +66,8 @@ struct Trade {
     int stk_code;
     int bid_id;
     int ask_id;
-    int volume;
     double price;
+    int volume;
 
     void append_to_str(std::string& str) const {
         str.reserve(str.length() + sizeof(Trade));
@@ -94,6 +96,24 @@ struct Trade {
 
 } __attribute__((packed));
 
+struct CommTrade {
+    int stk_code;
+    int bid_id;
+    int ask_id;
+    int dummy;
+    double price;
+    int volume;
+
+    void print() const {
+        printf("CommTrade [%d] bid_id: %d\task_id: %d\tprice: %.2f\t, volume: %d\n",
+               stk_code,
+               bid_id,
+               ask_id,
+               price,
+               volume);
+    }
+} __attribute__((packed));
+
 struct OrderAck {
     int stk_code;
     int order_id;
@@ -107,7 +127,7 @@ struct OrderAck {
         const char* buf = (str.c_str() + offset);
         get_elem_from_buf(buf, offset, *this);
     }
-} __attribute__((packed));
+};
 
 class Coordinates {
    public:

@@ -25,30 +25,42 @@ void ExchangeTradeSender::run() {
     }
 }
 
+CommTrade convert_trade_to_commtrade(const Trade& trade) {
+    return CommTrade {
+        stk_code : trade.stk_code,
+        bid_id : trade.bid_id,
+        ask_id : trade.ask_id,
+        dummy : 0,
+        price : trade.price,
+        volume : trade.volume
+    };
+}
+
 void ExchangeTradeSender::put_trade(Trade& trade) {
     // build trade msg
     std::string trade_msg;
     uint32_t msg_code = MSG_TYPE::TRADE_MSG;
     uint32_t cnt = 1;
+    CommTrade commTrade = convert_trade_to_commtrade(trade);
     trade_msg.append((char*)&msg_code, sizeof(uint32_t));
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
-    trade_msg.append((char*)&trade, sizeof(trade));
+    trade_msg.append((char*)&commTrade, sizeof(commTrade));
 
     std::cout << "before serial trade:" << trade_msg.size() << std::endl;
     trade.print();
-    std::cout << "after serial trade " << std::endl;
+    // std::cout << "after serial trade " << std::endl;
 
     // TODO!: debug
-    std::vector<Trade> out_trades;
-    size_t out_offset = sizeof(uint32_t); // skip msg code
-    uint32_t out_cnt = 0;
-    get_elem_from_buf(trade_msg.c_str(), out_offset, out_cnt);
-    out_trades.resize(out_cnt);
-    std::cout << "out cnt=" << out_cnt << std::endl;
-    for(auto& trade : out_trades) {
-        get_elem_from_buf(trade_msg.c_str(), out_offset, trade);
-        trade.print();
-    }
+    // std::vector<Trade> out_trades;
+    // size_t out_offset = sizeof(uint32_t); // skip msg code
+    // uint32_t out_cnt = 0;
+    // get_elem_from_buf(trade_msg.c_str(), out_offset, out_cnt);
+    // out_trades.resize(out_cnt);
+    // std::cout << "out cnt=" << out_cnt << std::endl;
+    // for(auto& trade : out_trades) {
+    //     get_elem_from_buf(trade_msg.c_str(), out_offset, trade);
+    //     trade.print();
+    // }
 
     msg_queue_.put(trade_msg);
 }

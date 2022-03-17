@@ -86,8 +86,8 @@ int StockExchange::handleLimitOrder(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     left_volume,
                     price:      sr->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -98,8 +98,8 @@ int StockExchange::handleLimitOrder(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     sr->volume,
                     price:      sr->price,
-                    volume:     sr->volume
                 };
                 produceTrade(new_trade);
 
@@ -133,8 +133,8 @@ int StockExchange::handleLimitOrder(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     left_volume,
                     price:      br->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -145,8 +145,8 @@ int StockExchange::handleLimitOrder(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     br->volume,
                     price:      br->price,
-                    volume:     br->volume
                 };
                 produceTrade(new_trade);
 
@@ -193,8 +193,8 @@ int StockExchange::handleCounterpartyBest(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     left_volume,
                     price:      t_price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -206,8 +206,8 @@ int StockExchange::handleCounterpartyBest(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     sr->volume,
                     price:      t_price,
-                    volume:     sr->volume
                 };
                 produceTrade(new_trade);
 
@@ -243,8 +243,8 @@ int StockExchange::handleCounterpartyBest(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     left_volume,
                     price:      t_price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -255,8 +255,8 @@ int StockExchange::handleCounterpartyBest(Order& order)
                     stk_code:    stk_code,
                     bid_id:      br->order_id,
                     ask_id:      order.order_id,
+                    volume:      br->volume,
                     price:       t_price,
-                    volume:      br->volume
                 };
                 produceTrade(new_trade);
 
@@ -355,8 +355,8 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     left_volume,
                     price:      sr->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -367,8 +367,8 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     sr->volume,
                     price:      sr->price,
-                    volume:     sr->volume
                 };
                 produceTrade(new_trade);
 
@@ -402,8 +402,8 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     left_volume,
                     price:      br->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -414,8 +414,8 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     br->volume,
                     price:      br->price,
-                    volume:     br->volume
                 };
                 produceTrade(new_trade);
 
@@ -449,8 +449,8 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     left_volume,
                     price:      sr->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -461,8 +461,8 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     sr->volume,
                     price:      sr->price,
-                    volume:     sr->volume
                 };
                 produceTrade(new_trade);
 
@@ -488,8 +488,8 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     left_volume,
                     price:      br->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -500,8 +500,8 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     br->volume,
                     price:      br->price,
-                    volume:     br->volume
                 };
                 produceTrade(new_trade);
 
@@ -543,8 +543,8 @@ int StockExchange::handleWholeOrCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     left_volume,
                     price:      sr->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -555,8 +555,8 @@ int StockExchange::handleWholeOrCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     order.order_id,
                     ask_id:     sr->order_id,
+                    volume:     sr->volume,
                     price:      sr->price,
-                    volume:     sr->volume
                 };
                 produceTrade(new_trade);
 
@@ -579,8 +579,8 @@ int StockExchange::handleWholeOrCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     left_volume,
                     price:      br->price,
-                    volume:     left_volume
                 };
                 produceTrade(new_trade);
 
@@ -591,8 +591,8 @@ int StockExchange::handleWholeOrCancel(Order& order)
                     stk_code:   stk_code,
                     bid_id:     br->order_id,
                     ask_id:     order.order_id,
+                    volume:     br->volume,
                     price:      br->price,
-                    volume:     br->volume
                 };
                 produceTrade(new_trade);
 

@@ -34,6 +34,8 @@ public:
     static int loader_ny_matrix __attribute__((weak));
     static int loader_nz_matrix __attribute__((weak));
 
+    static bool have_cache_file __attribute__((weak));
+
     static std::vector<std::string> traders_addr;
     static std::vector<std::string> exchanges_addr;
     static std::vector<std::vector<std::vector<std::pair<int, int>>>> trader_port2exchange_port;
@@ -249,6 +251,7 @@ static void print_config(void)
     std::cout << "loader_nx_matrix: "         << Config::loader_nx_matrix  << LOG_endl;
     std::cout << "loader_ny_matrix: "         << Config::loader_ny_matrix  << LOG_endl;
     std::cout << "loader_nz_matrix: "         << Config::loader_nz_matrix  << LOG_endl;
+    std::cout << "have_cache_file: "      << Config::have_cache_file << LOG_endl;
 
     // print network config
     std::cout << "trader0_addr: "         << Config::traders_addr[0]  << LOG_endl;

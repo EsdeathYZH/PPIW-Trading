@@ -26,8 +26,10 @@ void TraderOrderSender::run() {
     // Monitor monitor;
     // monitor.start_thpt();
 
+    std::string order_msg;
+    // order_msg.reserve((Config::sliding_window_size * Config::stock_num / Config::exchange_num+7) * sizeof(Order) + 2 * sizeof(uint32_t));
     while (true) {
-        std::string order_msg;
+        order_msg.clear();
         uint32_t msg_code = MSG_TYPE::ORDER_MSG;
         uint32_t cnt = 0;
         order_msg.append((char*)&msg_code, sizeof(uint32_t));

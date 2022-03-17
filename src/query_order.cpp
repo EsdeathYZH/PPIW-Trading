@@ -21,10 +21,10 @@ std::vector<std::vector<Order>> fetch_order_by_config()
 
     part_id = 0;
     auto sorted_order_id = load_order_id_from_file(part_id);
-    oim.direction_matrix = load_matrix_from_file<direction_t>(get_fname(part_id, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
-    oim.type_matrix = load_matrix_from_file<type_t>(get_fname(part_id, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
-    oim.price_matrix = load_matrix_from_file<price_t>(get_fname(part_id, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
-    oim.volume_matrix = load_matrix_from_file<volume_t>(get_fname(part_id, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
+    oim.direction_matrix = load_matrix_from_file<direction_t>(get_input_fname(part_id, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
+    oim.type_matrix = load_matrix_from_file<type_t>(get_input_fname(part_id, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
+    oim.price_matrix = load_matrix_from_file<price_t>(get_input_fname(part_id, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
+    oim.volume_matrix = load_matrix_from_file<volume_t>(get_input_fname(part_id, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
 
     for (int t = 0; t < 10; t++) {
         for (int i = 0; i < file_order_count; i++) {
@@ -37,10 +37,10 @@ std::vector<std::vector<Order>> fetch_order_by_config()
 
     part_id = 1;
     sorted_order_id = load_order_id_from_file(part_id);
-    oim.direction_matrix = load_matrix_from_file<direction_t>(get_fname(part_id, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
-    oim.type_matrix = load_matrix_from_file<type_t>(get_fname(part_id, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
-    oim.price_matrix = load_matrix_from_file<price_t>(get_fname(part_id, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
-    oim.volume_matrix = load_matrix_from_file<volume_t>(get_fname(part_id, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
+    oim.direction_matrix = load_matrix_from_file<direction_t>(get_input_fname(part_id, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
+    oim.type_matrix = load_matrix_from_file<type_t>(get_input_fname(part_id, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
+    oim.price_matrix = load_matrix_from_file<price_t>(get_input_fname(part_id, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
+    oim.volume_matrix = load_matrix_from_file<volume_t>(get_input_fname(part_id, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
 
     for (int t = 0; t < 10; t++) {
         for (int i = 0; i < file_order_count; i++) {

@@ -66,8 +66,10 @@ void TraderController::load_data() {
 }
 
 void TraderController::run() {
+    std::vector<Order> order_to_send;
+    order_to_send.reserve(Config::stock_num * (Config::sliding_window_size + 17));
     while (work_flag) {
-        std::vector<Order> order_to_send;
+        order_to_send.clear();
 
         for (int t = 0; t < Config::stock_num; t++) {
             // sending order with id less than order_id_limits

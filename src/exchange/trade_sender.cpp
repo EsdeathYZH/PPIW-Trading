@@ -1,11 +1,13 @@
 #include "trade_sender.h"
 
+#include "common/monitor.hpp"
+
 namespace ubiquant {
 
-ExchangeTradeSender::ExchangeTradeSender() 
-    : msg_queue_(Config::sliding_window_size * Config::stock_num / 2){
+ExchangeTradeSender::ExchangeTradeSender()
+    : msg_queue_(Config::sliding_window_size * Config::stock_num / 2) {
     // init msg senders
-    for(int i = 0; i < Config::trader_num; i++) {
+    for (int i = 0; i < Config::trader_num; i++) {
         std::vector<std::pair<int, int>> port_pairs;
         auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
         port_pairs.push_back({channels[2].second, channels[2].first});
@@ -15,18 +17,24 @@ ExchangeTradeSender::ExchangeTradeSender()
 
 void ExchangeTradeSender::run() {
     logstream(LOG_EMPH) << "Exchange TradeSender is running..." << LOG_endl;
-    while(true) {
+    // Monitor monitor;
+    // monitor.start_thpt();
+    while (true) {
         auto msg = msg_queue_.take();
-        for(auto& sender : msg_senders_) {
-            if(!sender->send(msg)) {
+        for (auto& sender : msg_senders_) {
+            if (!sender->send(msg)) {
                 logstream(LOG_ERROR) << "Message sending error!" << LOG_endl;
             }
         }
+
+        // monitor.add_cnt();
+        // monitor.print_timely_thpt("Trade Sender Throughput");
     }
+    // monitor.end_thpt();
 }
 
 CommTrade convert_trade_to_commtrade(const Trade& trade) {
-    return CommTrade {
+    return CommTrade{
         stk_code : trade.stk_code,
         bid_id : trade.bid_id,
         ask_id : trade.ask_id,
@@ -46,8 +54,8 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
     trade_msg.append((char*)&commTrade, sizeof(commTrade));
 
-    std::cout << "before serial trade:" << trade_msg.size() << std::endl;
-    trade.print();
+    // std::cout << "before serial trade:" << trade_msg.size() << std::endl;
+    // trade.print();
     // std::cout << "after serial trade " << std::endl;
 
     // TODO!: debug
@@ -77,4 +85,3 @@ void ExchangeTradeSender::put_order_ack(OrderAck& ack) {
 }
 
 }  // namespace ubiquant
-

@@ -384,7 +384,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
             }
         }
         if (left_volume) {
-            ex_debug("Type3: left_volume=%d\n", left_volume);
+            // ex_debug("Type3: left_volume=%d\n", left_volume);
             return left_volume; /* partial reject */
         }
     } else if (order.direction == -1) {
@@ -479,7 +479,7 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
             }
         }
         if (left_volume) {
-            ex_debug("Type4: left_volume=%d\n", left_volume);
+            // ex_debug("Type4: left_volume=%d\n", left_volume);
             return left_volume; /* partial reject */
         }
     } else if (order.direction == -1) {
@@ -518,7 +518,7 @@ int StockExchange::handleImmediateOtherCancel(Order& order)
             }
         }
         if (left_volume) {
-            ex_debug("Type4: left_volume=%d\n", left_volume);
+            // ex_debug("Type4: left_volume=%d\n", left_volume);
             return left_volume; /* partial reject */
         }
     } else {

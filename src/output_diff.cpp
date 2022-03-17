@@ -5,7 +5,7 @@
 
 #include <common/type.hpp>
 
-using namespace ubiquant;
+namespace ubiquant {
 
 std::vector<Trade> read_trade_from_file(std::string filename)
 {
@@ -42,6 +42,10 @@ bool operator!=(Trade& t1, Trade& t2)
     return false;
 }
 
+} // namespace uniquant
+
+using namespace ubiquant;
+
 int main(int argc, char** argv)
 {
     if (argc != 3) {
@@ -57,9 +61,11 @@ int main(int argc, char** argv)
     for (int i = 0; i < MIN(answer.size(), output.size()); ++i) {
         if (answer[i] != output[i]) {
             std::cout << "diff at [" << i << ']' << std::endl;
-            answer[i].print();
-            std::cout << std::endl;
-            output[i].print();
+            for (int k = i - 10; k < i + 10; ++k) {
+                answer[k].print();
+                output[k].print();
+                std::cout << std::endl;
+            }
             return 0;
         }
     }

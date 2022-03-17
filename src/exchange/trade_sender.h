@@ -19,6 +19,8 @@ public:
 
     void put_order_ack(OrderAck& ack);
 
+    volatile bool sender_running = true;
+
 protected:
     // socket client
     std::vector<std::shared_ptr<MessageSender>> msg_senders_;

@@ -1,10 +1,10 @@
-data_folder     /data/100x100x100/
+data_folder     /data/100x1000x1000/
 trade_output_folder     /data/team-7/
 network_config_file     /home/team-7/repo/awsome-10w/network.host
-sliding_window_size     100
+sliding_window_size     10000
 stock_num       10
 trader_num      2
 exchange_num    2
 loader_nx_matrix        500
-loader_ny_matrix        100
-loader_nz_matrix        100
+loader_ny_matrix        1000
+loader_nz_matrix        1000

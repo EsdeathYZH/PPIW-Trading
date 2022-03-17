@@ -10,7 +10,6 @@ extern volatile bool work_flag;
 
 TraderController::TraderController()
     : next_sorted_struct_idx(Config::stock_num, 0), NX_SUB(Config::loader_nx_matrix), NY_SUB(Config::loader_ny_matrix), NZ_SUB(Config::loader_nz_matrix) {
-    
     // init order sender & trade receiver
     trade_receiver_ = std::make_shared<TraderTradeReceiver>();
     for (int i = 0; i < Config::exchange_num; i++) {
@@ -48,12 +47,52 @@ void TraderController::load_data() {
 
     this->price_limits = load_prev_close(Config::partition_idx);
     std::tie(this->hook, this->hooked_trade) = load_hook();
-    this->sorted_order_id = load_order_id_from_file(Config::partition_idx);
 
-    oim.direction_matrix = load_matrix_from_file<direction_t>(get_fname(Config::partition_idx, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
-    oim.type_matrix = load_matrix_from_file<type_t>(get_fname(Config::partition_idx, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
-    oim.price_matrix = load_matrix_from_file<price_t>(get_fname(Config::partition_idx, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
-    oim.volume_matrix = load_matrix_from_file<volume_t>(get_fname(Config::partition_idx, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
+    if (Config::have_cache_file)
+        return;
+
+    auto sorted_order_id = load_order_id_from_file(Config::partition_idx);
+
+    auto direction_matrix = load_matrix_from_file<direction_t>(get_input_fname(Config::partition_idx, direction_idx), DATASET_NAME[direction_idx], RANK, count, offset);
+    auto type_matrix = load_matrix_from_file<type_t>(get_input_fname(Config::partition_idx, type_idx), DATASET_NAME[type_idx], RANK, count, offset);
+    auto price_matrix = load_matrix_from_file<price_t>(get_input_fname(Config::partition_idx, price_idx), DATASET_NAME[price_idx], RANK, count, offset);
+    auto volume_matrix = load_matrix_from_file<volume_t>(get_input_fname(Config::partition_idx, volume_idx), DATASET_NAME[volume_idx], RANK, count, offset);
+
+    // output sorted matrix cache
+    uint64_t start = timer::get_usec();
+    std::vector<std::vector<std::ofstream>> ofs(Config::stock_num);
+    for (int t = 0; t < Config::stock_num; t++) {
+        for (int i = 0; i < num_matrix; i++) {
+            ofs[t].emplace_back(std::ofstream(get_cache_fname(Config::partition_idx, (matrix_idx)i) + "-" + std::to_string(t), std::ios::out | std::ios::binary));
+        }
+    }
+
+    const int NX = Config::loader_nx_matrix;
+    const int NY = Config::loader_ny_matrix;
+    const int NZ = Config::loader_nz_matrix;
+    const uint64_t num_order = NX * NY * NZ / Config::stock_num;
+    for (int t = 0; t < Config::stock_num; t++) {
+        std::cout << "output cache " << t << std::endl;
+        for (int i = 0; i < num_order; i++) {
+            ofs[t][order_id_idx].write((char*)&sorted_order_id[t][i].order_id, sizeof(order_id_t));
+
+            int x = sorted_order_id[t][i].coor.get_x(), y = sorted_order_id[t][i].coor.get_y(), z = sorted_order_id[t][i].coor.get_z();
+            assert((0 <= x && x < NX) && (0 <= y && y < NY) && (0 <= z && z < NZ));
+            assert(t == x % Config::stock_num);
+
+            ofs[t][direction_idx].write((char*)&direction_matrix[x * (NY * NZ) + y * (NZ) + z], sizeof(direction_t));
+            ofs[t][type_idx].write((char*)&type_matrix[x * (NY * NZ) + y * (NZ) + z], sizeof(type_t));
+            ofs[t][price_idx].write((char*)&price_matrix[x * (NY * NZ) + y * (NZ) + z], sizeof(price_t));
+            ofs[t][volume_idx].write((char*)&volume_matrix[x * (NY * NZ) + y * (NZ) + z], sizeof(volume_t));
+        }
+    }
+    for (int t = 0; t < Config::stock_num; t++) {
+        for (int i = 0; i < num_matrix; i++) {
+            ofs[t][i].close();
+        }
+    }
+    uint64_t end = timer::get_usec();
+    std::cout << "Finish dump matrix to cache file in " << (end - start) / 1000 << " msec" << std::endl;
 
     // for (int t = 0; t < Config::stock_num; t++) {
     //     for (int i = 0; i < 5; i++) {
@@ -67,7 +106,8 @@ void TraderController::load_data() {
 
 void TraderController::run() {
     std::vector<Order> order_to_send;
-    order_to_send.reserve(Config::stock_num * (Config::sliding_window_size + 17));
+    order_to_send.reserve(Config::stock_num * (Config::sliding_window_size + 7));
+    OrderGenerator orderGen;
     while (work_flag) {
         order_to_send.clear();
 
@@ -75,8 +115,11 @@ void TraderController::run() {
             // sending order with id less than order_id_limits
             uint64_t order_id_limits = sharedInfo->get_sliding_window_start(t + 1) + Config::sliding_window_size;
 
-            for (int& ss_idx = next_sorted_struct_idx[t]; ss_idx < sorted_order_id[t].size(); ss_idx++) {
-                Order order = oim.generate_order(t + 1, sorted_order_id[t][ss_idx], NX_SUB, NY_SUB, NZ_SUB);
+            while (true) {
+                Order order = orderGen.generate_order(t + 1);
+                // order.print();
+                if (order.type == -1)  // no more order for this stock code
+                    break;
 
                 // check order id < order_id_limits
                 if (order.order_id >= order_id_limits)
@@ -97,6 +140,7 @@ void TraderController::run() {
                 if (order.type == 0 && (order.price < price_limits[0][t] || order.price > price_limits[1][t]))
                     order.type = -1;
 
+                orderGen.commit(t + 1);
                 order_to_send.push_back(order);
             }
         }

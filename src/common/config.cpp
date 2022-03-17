@@ -16,6 +16,7 @@ int Config::loader_nx_matrix = 500;
 int Config::loader_ny_matrix = 1000;
 int Config::loader_nz_matrix = 1000;
 
+bool Config::have_cache_file = false;
 
 std::vector<std::vector<std::vector<std::pair<int, int>>>> Config::trader_port2exchange_port;
 

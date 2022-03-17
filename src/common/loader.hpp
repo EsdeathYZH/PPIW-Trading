@@ -30,30 +30,46 @@ enum matrix_idx {
 // const H5std_string h5_prefix = "/data/100x1000x1000/";
 H5std_string hook_fname;
 
-std::vector<std::vector<H5std_string>> FILE_NAME;
+std::vector<std::vector<H5std_string>> INPUT_FILE_NAME;
+std::vector<std::vector<H5std_string>> CACHE_FILE_NAME;
 
 bool loader_inited = false;
 
 void init_loader() {
     hook_fname = Config::data_folder + "hook.h5";
 
-    FILE_NAME = std::vector<std::vector<H5std_string>>({{Config::data_folder + "order_id1.h5",
-                                                         Config::data_folder + "direction1.h5",
-                                                         Config::data_folder + "type1.h5",
-                                                         Config::data_folder + "price1.h5",
-                                                         Config::data_folder + "volume1.h5"},
-                                                        {Config::data_folder + "order_id2.h5",
-                                                         Config::data_folder + "direction2.h5",
-                                                         Config::data_folder + "type2.h5",
-                                                         Config::data_folder + "price2.h5",
-                                                         Config::data_folder + "volume2.h5"}});
+    INPUT_FILE_NAME = std::vector<std::vector<H5std_string>>({{Config::data_folder + "order_id1.h5",
+                                                               Config::data_folder + "direction1.h5",
+                                                               Config::data_folder + "type1.h5",
+                                                               Config::data_folder + "price1.h5",
+                                                               Config::data_folder + "volume1.h5"},
+                                                              {Config::data_folder + "order_id2.h5",
+                                                               Config::data_folder + "direction2.h5",
+                                                               Config::data_folder + "type2.h5",
+                                                               Config::data_folder + "price2.h5",
+                                                               Config::data_folder + "volume2.h5"}});
+
+    CACHE_FILE_NAME = std::vector<std::vector<H5std_string>>({{Config::trade_output_folder + "order_id1.mat",
+                                                               Config::trade_output_folder + "direction1.mat",
+                                                               Config::trade_output_folder + "type1.mat",
+                                                               Config::trade_output_folder + "price1.mat",
+                                                               Config::trade_output_folder + "volume1.mat"},
+                                                              {Config::trade_output_folder + "order_id2.mat",
+                                                               Config::trade_output_folder + "direction2.mat",
+                                                               Config::trade_output_folder + "type2.mat",
+                                                               Config::trade_output_folder + "price2.mat",
+                                                               Config::trade_output_folder + "volume2.mat"}});
 
     loader_inited = true;
 }
 
-// part should be 1 or 2
-inline H5std_string get_fname(int part, matrix_idx idx) {
-    return FILE_NAME[part][idx];
+// part should be 0 or 1
+inline H5std_string get_input_fname(int part, matrix_idx idx) {
+    return INPUT_FILE_NAME[part][idx];
+}
+
+inline H5std_string get_cache_fname(int part, matrix_idx idx) {
+    return CACHE_FILE_NAME[part][idx];
 }
 
 const std::vector<H5std_string> DATASET_NAME = {
@@ -67,8 +83,6 @@ const std::vector<H5std_string> DATASET_NAME = {
 const H5std_string PREV_CLOSE_DATASET = "prev_close";
 // (10, 100, 4)
 const H5std_string HOOK_DATASET = "hook";
-
-const std::string cache_dir = "/data/team-7/";
 
 void dataset_read(int* data_read, const H5::DataSet& dataset, const H5::DataSpace& memspace, const H5::DataSpace& dataspace) {
     dataset.read(data_read, H5::PredType::NATIVE_INT, memspace, dataspace);
@@ -134,7 +148,7 @@ std::vector<std::vector<SortStruct>> load_order_id_from_file(int part) {
 
     hsize_t offset[3] = {0, 0, 0};
     hsize_t count[3] = {NX_SUB, NY_SUB, NZ_SUB};
-    auto data_read = load_matrix_from_file<order_id_t>(get_fname(part, order_id_idx), DATASET_NAME[order_id_idx], RANK, count, offset);
+    auto data_read = load_matrix_from_file<order_id_t>(get_input_fname(part, order_id_idx), DATASET_NAME[order_id_idx], RANK, count, offset);
 
     uint64_t start = timer::get_usec();
     std::vector<std::vector<SortStruct>> order_id(Config::stock_num, std::vector<SortStruct>(NX_SUB * NY_SUB * NZ_SUB / Config::stock_num));
@@ -215,7 +229,7 @@ std::vector<std::vector<price_t>> load_prev_close(int part) {
     hsize_t offset = 0;
     hsize_t count = Config::stock_num;
 
-    auto data_read = load_matrix_from_file<price_t>(get_fname(part, price_idx), PREV_CLOSE_DATASET, 1, &count, &offset);
+    auto data_read = load_matrix_from_file<price_t>(get_input_fname(part, price_idx), PREV_CLOSE_DATASET, 1, &count, &offset);
 
     std::vector<std::vector<price_t>> price_limits(2, std::vector<price_t>(10));
     for (int t = 0; t < Config::stock_num; t++) {
@@ -235,7 +249,7 @@ template <typename T>
 T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
     T data_read;
 
-    H5::H5File file(get_fname(part, idx), H5F_ACC_RDONLY);
+    H5::H5File file(get_input_fname(part, idx), H5F_ACC_RDONLY);
     H5::DataSet dataset = file.openDataSet(DATASET_NAME[idx]);
 
     H5::DataSpace dataspace = dataset.getSpace();
@@ -256,5 +270,104 @@ T load_single_data_from_file(int part, matrix_idx idx, Coordinates coor) {
     file.close();
     return data_read;
 }
+
+class OrderGenerator {
+   private:
+    std::vector<std::vector<std::ifstream>> ifs;
+    std::vector<std::shared_ptr<order_id_t[]>> order_id_matrix;
+    std::vector<std::shared_ptr<direction_t[]>> direction_matrix;
+    std::vector<std::shared_ptr<type_t[]>> type_matrix;
+    std::vector<std::shared_ptr<price_t[]>> price_matrix;
+    std::vector<std::shared_ptr<volume_t[]>> volume_matrix;
+
+    std::vector<int> start_idx;
+    int length;
+
+    std::vector<int> cur_partition;
+    const int num_partition = 10;
+
+   public:
+    bool load_data(int stk_code_minus_one) {
+        if (cur_partition[stk_code_minus_one] >= num_partition)
+            return false;
+
+        cur_partition[stk_code_minus_one]++;
+
+        ifs[stk_code_minus_one][order_id_idx].read((char*)order_id_matrix[stk_code_minus_one].get(), sizeof(order_id_t) * length);
+        ifs[stk_code_minus_one][direction_idx].read((char*)direction_matrix[stk_code_minus_one].get(), sizeof(direction_t) * length);
+        ifs[stk_code_minus_one][type_idx].read((char*)type_matrix[stk_code_minus_one].get(), sizeof(type_t) * length);
+        ifs[stk_code_minus_one][price_idx].read((char*)price_matrix[stk_code_minus_one].get(), sizeof(price_t) * length);
+        ifs[stk_code_minus_one][volume_idx].read((char*)volume_matrix[stk_code_minus_one].get(), sizeof(volume_t) * length);
+
+        start_idx[stk_code_minus_one] = 0;
+        return true;
+    }
+
+    Order generate_order(stock_code_t stk_code) {
+        stk_code--;
+
+        if (start_idx[stk_code] >= length) {
+            if(!load_data(stk_code)) {
+                Order fail;
+                fail.type = -1;
+                return fail;
+            }
+        }
+        int idx = start_idx[stk_code];
+        Order order;
+        order.stk_code = stk_code + 1;
+        order.order_id = order_id_matrix[stk_code][idx];
+        order.direction = direction_matrix[stk_code][idx];
+        order.type = type_matrix[stk_code][idx];
+        order.price = price_matrix[stk_code][idx];
+        order.volume = volume_matrix[stk_code][idx];
+
+        return order;
+    }
+
+    void commit(stock_code_t stk_code) {
+        start_idx[--stk_code]++;
+    }
+
+    OrderGenerator() {
+        uint64_t start = timer::get_usec();
+        ifs = std::vector<std::vector<std::ifstream>>(Config::stock_num);
+        for (int t = 0; t < Config::stock_num; t++) {
+            for (int i = 0; i < num_matrix; i++) {
+                ifs[t].emplace_back(std::ifstream(get_cache_fname(Config::partition_idx, (matrix_idx)i) + "-" + std::to_string(t), std::ios::in | std::ios::binary));
+            }
+        }
+
+        length = Config::loader_nx_matrix * Config::loader_ny_matrix * Config::loader_nz_matrix / Config::stock_num / num_partition;
+        start_idx.resize(Config::stock_num);
+        cur_partition = std::vector<int>(Config::stock_num, 0);
+
+        order_id_matrix.resize(Config::stock_num);
+        direction_matrix.resize(Config::stock_num);
+        type_matrix.resize(Config::stock_num);
+        price_matrix.resize(Config::stock_num);
+        volume_matrix.resize(Config::stock_num);
+
+        for (int t = 0; t < Config::stock_num; t++) {
+            order_id_matrix[t] = std::shared_ptr<order_id_t[]>(new order_id_t[length]);
+            direction_matrix[t] = std::shared_ptr<direction_t[]>(new direction_t[length]);
+            type_matrix[t] = std::shared_ptr<type_t[]>(new type_t[length]);
+            price_matrix[t] = std::shared_ptr<price_t[]>(new price_t[length]);
+            volume_matrix[t] = std::shared_ptr<volume_t[]>(new volume_t[length]);
+            load_data(t);
+        }
+
+        uint64_t end = timer::get_usec();
+        std::cout << "Init OrderGenerator in " << (end - start) / 1000 << " msec" << std::endl;
+    }
+
+    ~OrderGenerator() {
+        for (int t = 0; t < Config::stock_num; t++) {
+            for (int i = 0; i < num_matrix; i++) {
+                ifs[t][i].close();
+            }
+        }
+    }
+};
 
 }  // namespace ubiquant

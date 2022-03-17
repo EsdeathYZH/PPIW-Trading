@@ -73,7 +73,7 @@ class TraderController : public ubi_thread {
     std::vector<std::vector<price_t>> price_limits;
     std::vector<std::unordered_map<order_id_t, HookTarget>> hook;
     std::shared_ptr<std::vector<std::unordered_map<trade_idx_t, volume_t>>> hooked_trade;
-    std::vector<std::vector<SortStruct>> sorted_order_id;
+    // std::vector<std::vector<SortStruct>> sorted_order_id;
 
     // read a NX_SUB*NY_SUB*NZ_SUB matrix
     const int NX_SUB;
@@ -83,7 +83,7 @@ class TraderController : public ubi_thread {
 
     hsize_t count[3];
     hsize_t offset[3] = {0, 0, 0};
-    ubiquant::OrderInfoMatrix oim;
+    // ubiquant::OrderInfoMatrix oim;
 
     std::vector<int> next_sorted_struct_idx;
     std::shared_ptr<SharedTradeInfo> sharedInfo;

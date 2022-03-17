@@ -348,6 +348,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
             if (sr->price != previous_price) {
                 if (++level_count > 5)
                     break;
+                previous_price = sr->price;
             }
 
             if (left_volume < sr->volume) {
@@ -395,6 +396,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
             if (br->price != previous_price) {
                 if (++level_count > 5)
                     break;
+                previous_price = br->price;
             }
 
             if (left_volume < br->volume) {

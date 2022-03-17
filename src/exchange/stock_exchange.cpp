@@ -337,7 +337,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
         /* Buy in */
         int left_volume = order.volume;
         int level_count = 0;
-        int previous_price = INT_MIN;
+        double previous_price = 0;
         while (true) {
             if (left_volume == 0)
                 break;
@@ -385,7 +385,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
         /* Sell out */
         int left_volume = order.volume;
         int level_count = 0;
-        int previous_price = INT_MIN;
+        double previous_price = 0;
         while (true) {
             if (left_volume == 0)
                 break;

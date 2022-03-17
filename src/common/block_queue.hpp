@@ -4,6 +4,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <deque>
+#include <vector>
 #include <chrono>
 #include <thread>
 
@@ -12,14 +13,144 @@ namespace ubiquant {
 template<class T>
 class BlockQueue {
 public:
-    using size_type = typename std::deque<T>::size_type;
+    using size_type = typename std::vector<T>::size_type;
 
 public:
-    BlockQueue(const int cap = -1) : m_maxCapacity(cap){}
+    BlockQueue(int cap) : m_maxCapacity(cap), m_queue(cap) {
+        m_queue.shrink_to_fit();
+    }
     ~BlockQueue(){}
 
     BlockQueue(const BlockQueue &) = delete;
     BlockQueue &operator = (const BlockQueue &) = delete;
+
+public:
+    // blocking api
+    void put(const T t);
+    T take();
+
+    // non-blocking api
+    bool offer(const T t);
+    bool poll(T& t);
+    bool offer(const T t, std::chrono::milliseconds& time);
+    bool poll(T& t, std::chrono::milliseconds& time);
+
+    bool empty() const{
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_sz_ == 0;
+    }
+
+    bool full() const{
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_sz_ >= m_maxCapacity;
+    }
+
+    size_type size(){
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_sz_;
+    }
+
+private:
+    std::vector<T> m_queue;
+    const int m_maxCapacity;
+    size_t m_head_ = 0, m_tail_ = 0;
+    int m_sz_ = 0;
+    mutable std::mutex m_mutex;
+    std::condition_variable m_cond_empty;
+    std::condition_variable m_cond_full;
+};
+
+template <class T>
+void BlockQueue<T>::put(const T t){
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_cond_full.wait(lock, [this]{ return m_sz_ < m_maxCapacity; });
+    m_queue[m_tail_] = t;
+    m_tail_ = (m_tail_ + 1) % m_maxCapacity;
+    m_sz_++;
+    m_cond_empty.notify_all();
+}
+
+template <class T>
+T BlockQueue<T>::take(){
+    std::unique_lock<std::mutex> lock(m_mutex);
+    // take必须判断队列为空
+    m_cond_empty.wait(lock, [&](){return m_sz_ > 0;});
+    auto res = m_queue[m_head_];
+    m_head_ = (m_head_ + 1) % m_maxCapacity;
+    m_sz_--;
+    m_cond_full.notify_all();
+    return res;
+}
+
+template <class T>
+bool BlockQueue<T>::offer(const T t){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_sz_ >= m_maxCapacity){
+        return false;
+    }
+    m_queue[m_tail_] = t;
+    m_tail_ = (m_tail_ + 1) % m_maxCapacity;
+    m_sz_++;
+    m_cond_empty.notify_all();
+    return true;
+}
+
+template <class T>
+bool BlockQueue<T>::poll(T& t){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(m_sz_ == 0){
+        return false;
+    }
+    t = m_queue[m_head_];
+    m_head_ = (m_head_ + 1) % m_maxCapacity;
+    m_sz_--;
+    m_cond_full.notify_all();
+    return true;
+}
+
+template <class T>
+bool BlockQueue<T>::offer(const T t, std::chrono::milliseconds& time){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    bool result = m_cond_full.wait(lock, time, 
+                                [&]{ return m_sz_ < m_maxCapacity; });
+    if(!result){
+        return false;
+    }
+    m_queue[m_tail_] = t;
+    m_tail_ = (m_tail_ + 1) % m_maxCapacity;
+    m_sz_++;
+    m_cond_empty.notify_all();
+    return true;
+}
+
+template <class T>
+bool BlockQueue<T>::poll(T& t, std::chrono::milliseconds& time){
+    std::lock_guard<std::mutex> lock(m_mutex);
+    bool result = m_cond_empty.wait_for(lock, time, 
+                                   [&] {return m_sz_ > 0;});
+    if(!result){
+        return false;
+    }
+    t = m_queue[m_head_];
+    m_head_ = (m_head_ + 1) % m_maxCapacity;
+    m_sz_--;
+    m_cond_full.notify_all();
+    return true;
+}
+
+
+
+template<class T>
+class BlockQueueSTL {
+public:
+    using size_type = typename std::deque<T>::size_type;
+
+public:
+    BlockQueueSTL(const int cap = -1) : m_maxCapacity(cap){}
+    ~BlockQueueSTL(){}
+
+    BlockQueueSTL(const BlockQueueSTL &) = delete;
+    BlockQueueSTL &operator = (const BlockQueueSTL &) = delete;
 
 public:
     // blocking api
@@ -58,7 +189,7 @@ private:
 };
 
 template <class T>
-void BlockQueue<T>::put(const T t){
+void BlockQueueSTL<T>::put(const T t){
     std::unique_lock<std::mutex> lock(m_mutex);
     if(m_maxCapacity != -1){
         m_cond_full.wait(lock, [this]{ return m_queue.size() < m_maxCapacity; });
@@ -68,7 +199,7 @@ void BlockQueue<T>::put(const T t){
 }
 
 template <class T>
-T BlockQueue<T>::take(){
+T BlockQueueSTL<T>::take(){
     std::unique_lock<std::mutex> lock(m_mutex);
     // take必须判断队列为空
     m_cond_empty.wait(lock, [&](){return !m_queue.empty();});
@@ -79,7 +210,7 @@ T BlockQueue<T>::take(){
 }
 
 template <class T>
-bool BlockQueue<T>::offer(const T t){
+bool BlockQueueSTL<T>::offer(const T t){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_maxCapacity != -1 && m_queue.size() >= m_maxCapacity){
         return false;
@@ -90,7 +221,7 @@ bool BlockQueue<T>::offer(const T t){
 }
 
 template <class T>
-bool BlockQueue<T>::poll(T& t){
+bool BlockQueueSTL<T>::poll(T& t){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_queue.empty()){
         return false;
@@ -102,7 +233,7 @@ bool BlockQueue<T>::poll(T& t){
 }
 
 template <class T>
-bool BlockQueue<T>::offer(const T t, std::chrono::milliseconds& time){
+bool BlockQueueSTL<T>::offer(const T t, std::chrono::milliseconds& time){
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_maxCapacity != -1){
         bool result = m_cond_full.wait(lock, time, 
@@ -117,7 +248,7 @@ bool BlockQueue<T>::offer(const T t, std::chrono::milliseconds& time){
 }
 
 template <class T>
-bool BlockQueue<T>::poll(T& t, std::chrono::milliseconds& time){
+bool BlockQueueSTL<T>::poll(T& t, std::chrono::milliseconds& time){
     std::lock_guard<std::mutex> lock(m_mutex);
     bool result = m_cond_empty.wait_for(lock, time, 
                                    [&] {return !m_queue.empty();});

@@ -34,7 +34,7 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
     trade_msg.append((char*)&trade, sizeof(trade));
 
-    std::cout << "before serial trade " << std::endl;
+    std::cout << "before serial trade:" << trade_msg.size() << std::endl;
     trade.print();
     std::cout << "after serial trade " << std::endl;
 

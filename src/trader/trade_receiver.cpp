@@ -52,6 +52,12 @@ void TraderTradeReceiver::run() {
     logstream(LOG_EMPH) << "Trader TradeReceiver is running..." << LOG_endl;
     while(true) {
         std::string msg = msg_receiver_->recv();
+        if(msg.size() == 32) {
+            double price = 0;
+            size_t off = 24;
+            get_elem_from_buf(msg.c_str(), off, price);
+            std::cout << "before serial trade:" << msg.size()  << ", price:" << price << std::endl;
+        }
         uint32_t msg_code;
         size_t offset = 0;
         get_elem_from_buf(msg.c_str(), offset, msg_code);
@@ -67,6 +73,10 @@ void TraderTradeReceiver::run() {
 
 void TraderTradeReceiver::process_trade_result(std::string& msg) {
     // de-serialize
+    // double price = 0;
+    // size_t off = 24;
+    // get_elem_from_buf(msg.c_str(), off, price);
+    // std::cout << "before serial trade:" << msg.size()  << ", price:" << price << std::endl;
     std::vector<Trade> trades;
     size_t offset = sizeof(uint32_t); // skip msg code
     uint32_t cnt = 0;

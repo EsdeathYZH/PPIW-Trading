@@ -64,8 +64,8 @@ struct Trade {
     int stk_code;
     int bid_id;
     int ask_id;
-    double price;
     int volume;
+    double price;
 
     void append_to_str(std::string& str) const {
         str.reserve(str.length() + sizeof(Trade));

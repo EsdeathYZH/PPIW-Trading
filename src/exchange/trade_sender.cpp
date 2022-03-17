@@ -32,7 +32,24 @@ void ExchangeTradeSender::put_trade(Trade& trade) {
     uint32_t cnt = 1;
     trade_msg.append((char*)&msg_code, sizeof(uint32_t));
     trade_msg.append((char*)&cnt, sizeof(uint32_t));
-    trade.append_to_str(trade_msg);
+    trade_msg.append((char*)&trade, sizeof(trade));
+
+    std::cout << "before serial trade " << std::endl;
+    trade.print();
+    std::cout << "after serial trade " << std::endl;
+
+    // TODO!: debug
+    std::vector<Trade> out_trades;
+    size_t out_offset = sizeof(uint32_t); // skip msg code
+    uint32_t out_cnt = 0;
+    get_elem_from_buf(trade_msg.c_str(), out_offset, out_cnt);
+    out_trades.resize(out_cnt);
+    std::cout << "out cnt=" << out_cnt << std::endl;
+    for(auto& trade : out_trades) {
+        get_elem_from_buf(trade_msg.c_str(), out_offset, trade);
+        trade.print();
+    }
+
     msg_queue_.put(trade_msg);
 }
 
@@ -43,7 +60,7 @@ void ExchangeTradeSender::put_order_ack(OrderAck& ack) {
     uint32_t cnt = 1;
     ack_msg.append((char*)&msg_code, sizeof(uint32_t));
     ack_msg.append((char*)&cnt, sizeof(uint32_t));
-    ack.append_to_str(ack_msg);
+    ack_msg.append((char*)&ack, sizeof(ack));
     msg_queue_.put(ack_msg);
 }
 

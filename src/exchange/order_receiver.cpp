@@ -26,7 +26,7 @@ void ExchangeOrderReceiver::run() {
         get_elem_from_buf(msg.c_str(), offset, cnt);
         Order order;
         for(uint32_t i = 0; i < cnt; i++) {
-            order.from_str(msg, offset);
+            get_elem_from_buf(msg.c_str(), offset, order);
             Global<Exchange>::Get()->receiveOrder(order);
         }
     }

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "common/global.hpp"
 #include "common/block_queue.hpp"
 #include "common/thread.h"
 #include "common/type.hpp"

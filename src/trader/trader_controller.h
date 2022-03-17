@@ -67,6 +67,8 @@ class TraderController : public ubi_thread {
 
     void update_if_hooked(const stock_code_t stock_code, const trade_idx_t trade_idx, const volume_t volume);
 
+    inline volatile bool is_inited() { return init_finished; }
+
    protected:
     std::vector<std::vector<price_t>> price_limits;
     std::vector<std::unordered_map<order_id_t, HookTarget>> hook;
@@ -91,6 +93,9 @@ class TraderController : public ubi_thread {
 
     // order sender (1)
     std::shared_ptr<TraderTradeReceiver> trade_receiver_;
+
+
+    volatile bool init_finished = false;
 };
 
 }  // namespace ubiquant

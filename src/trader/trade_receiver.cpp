@@ -71,6 +71,16 @@ void TraderTradeReceiver::run() {
     }
 }
 
+Trade convert_commtrade_to_trade(const CommTrade& commTrade) {
+    return Trade {
+        stk_code : commTrade.stk_code,
+        bid_id : commTrade.bid_id,
+        ask_id : commTrade.ask_id,
+        price : commTrade.price,
+        volume : commTrade.volume
+    };
+}
+
 void TraderTradeReceiver::process_trade_result(std::string& msg) {
     // de-serialize
     // double price = 0;
@@ -83,7 +93,9 @@ void TraderTradeReceiver::process_trade_result(std::string& msg) {
     get_elem_from_buf(msg.c_str(), offset, cnt);
     trades.resize(cnt);
     for(auto& trade : trades) {
-        get_elem_from_buf(msg.c_str(), offset, trade);
+        CommTrade commTrade;
+        get_elem_from_buf(msg.c_str(), offset, commTrade);
+        trade = convert_commtrade_to_trade(commTrade);
     }
     
     for(auto& trade : trades) {

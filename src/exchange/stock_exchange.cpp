@@ -214,6 +214,9 @@ int StockExchange::handleCounterpartyBest(Order& order)
                 left_volume -= sr->volume;
                 decl_book.removeSellFirst();
 
+                if (left_volume == 0)
+                    break;
+
                 sr = decl_book.querySellFirst();
                 if (sr == nullptr || sr->price != t_price) {
                     /* 卖一价格不足交易，将剩余部分以限价形式记录在集中申报簿中 */
@@ -262,6 +265,9 @@ int StockExchange::handleCounterpartyBest(Order& order)
 
                 left_volume -= br->volume;
                 decl_book.removeBuyFirst();
+
+                if (left_volume == 0)
+                    break;
 
                 br = decl_book.queryBuyFirst();
                 if (br == nullptr || br->price != t_price) {
@@ -337,7 +343,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
         /* Buy in */
         int left_volume = order.volume;
         int level_count = 0;
-        int previous_price = INT_MIN;
+        double previous_price = 0;
         while (true) {
             if (left_volume == 0)
                 break;
@@ -385,7 +391,7 @@ int StockExchange::handleFiveLevelOtherCancel(Order& order)
         /* Sell out */
         int left_volume = order.volume;
         int level_count = 0;
-        int previous_price = INT_MIN;
+        double previous_price = 0;
         while (true) {
             if (left_volume == 0)
                 break;

@@ -16,7 +16,10 @@ int Config::loader_nx_matrix = 500;
 int Config::loader_ny_matrix = 1000;
 int Config::loader_nz_matrix = 1000;
 
-bool Config::have_cache_file = false;
+// 0: don't have cache file, load and write cache file
+// 1: have cache file
+// 2: forget cache, all data in memory
+int Config::load_mode = 0;
 
 std::vector<std::vector<std::vector<std::pair<int, int>>>> Config::trader_port2exchange_port;
 

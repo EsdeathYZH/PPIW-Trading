@@ -35,10 +35,10 @@ bool operator!=(Trade& t1, Trade& t2)
         return true;
     if (t1.bid_id != t2.bid_id)
         return true;
-    // if (t1.price != t2.price)
-    //     return true;
-    // if (t1.volume != t2.volume)
-    //     return true;
+    if (t1.price != t2.price)
+        return true;
+    if (t1.volume != t2.volume)
+        return true;
     return false;
 }
 

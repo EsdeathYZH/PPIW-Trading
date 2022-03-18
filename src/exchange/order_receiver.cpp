@@ -32,13 +32,12 @@ void ExchangeOrderReceiver::restart() {
 
 void ExchangeOrderReceiver::reset_network() {
     // reset msg receivers
-    msg_receiver_.reset();
     std::vector<int> ports;
     for (int i = 0; i < Config::trader_num; i++) {
         ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][0].second);
         ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][1].second);
     }
-    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
+    msg_receiver_->reset_port(ports);
 }
 
 void ExchangeOrderReceiver::run() {

@@ -97,7 +97,7 @@ class TraderController : public ubi_thread {
     std::vector<int> next_sorted_struct_idx;
     std::shared_ptr<SharedTradeInfo> sharedInfo;
 
-    // order sender (exchange_num)
+    // order sender (exchange_num * channels)
     std::vector<std::shared_ptr<TraderOrderSender>> order_senders_;
 
     // order sender (1)

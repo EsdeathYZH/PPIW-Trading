@@ -25,7 +25,7 @@ class MessageReceiver {
 private:
     zmq::context_t context;
     std::vector<int> ports;
-    std::unordered_map<int, zmq::socket_t*> receivers;     // static allocation
+    std::vector<zmq::socket_t*> receivers;     // static allocation
 
     int offset = 0;
 
@@ -34,26 +34,57 @@ public:
         : context(1), ports(receiver_ports) {
 
         for (auto port : receiver_ports) {
-            receivers[port] = new zmq::socket_t(context, ZMQ_PULL);
+            auto socket = new zmq::socket_t(context, ZMQ_PULL);
             char address[32] = "";
             snprintf(address, 32, "tcp://*:%d", port);
-            receivers[port]->bind(address);
-            if(errno) std::cout << "Errno:" << errno << std::endl;
-            std::cout << "Bind on port:" << port << std::endl;
+            socket->bind(address);
+            std::cout << "Bind on address:" << address << std::endl;
+            receivers.push_back(socket);
         }
     }
 
     ~MessageReceiver() {
-        for (auto& [port, socket] : receivers) {
+        for(int idx = 0; idx < receivers.size(); idx++) {
+            auto port = ports[idx];
+            auto& socket = receivers[idx];
             if (socket) {
                 char address[32] = "";
                 snprintf(address, 32, "tcp://*:%d", port);
                 socket->unbind(address);
-                std::cout << "Unbind from port:" << port << std::endl;
+                std::cout << "Unbind from address:" << address << std::endl;
                 delete socket;
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    void reset_port(std::vector<int> new_ports) {
+        assert(new_ports.size() == ports.size());
+        for(int idx = 0; idx < ports.size(); idx++) {
+            int port = ports[idx];
+            auto& socket = receivers[idx];
+            if (socket) {
+                char address[32] = "";
+                snprintf(address, 32, "tcp://*:%d", port);
+                socket->unbind(address);
+                std::cout << "Unbind from address:" << address << std::endl;
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        for(int idx = 0; idx < new_ports.size(); idx++) {
+            int new_port = new_ports[idx];
+            auto& socket = receivers[idx];
+            if (socket) {
+                char address[32] = "";
+                snprintf(address, 32, "tcp://*:%d", new_port);
+                socket->bind(address);
+                std::cout << "Bind on address:" << address << std::endl;
+            }
+        }
+
+        ports.swap(new_ports);
     }
 
     std::string recv() {
@@ -83,7 +114,7 @@ public:
         zmq::message_t msg;
         bool success = false;
 
-        if (success = receivers[ports[idx]]->recv(&msg, ZMQ_NOBLOCK))
+        if (success = receivers[idx]->recv(&msg, ZMQ_NOBLOCK))
             str = std::string((char *)msg.data(), msg.size());
 
         return success;

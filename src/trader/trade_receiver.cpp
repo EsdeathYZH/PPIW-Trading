@@ -54,13 +54,12 @@ void TraderTradeReceiver::restart() {
 }
 
 void TraderTradeReceiver::reset_network() {
-    // // reset msg receiver
-    msg_receiver_.reset();
+    // reset msg receiver
     std::vector<int> ports;
     for (int i = 0; i < Config::exchange_num; i++) {
         ports.push_back(Config::trader_port2exchange_port[Config::partition_idx][i][2].first);
     }
-    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
+    msg_receiver_->reset_port(ports);
 }
 
 TraderTradeReceiver::~TraderTradeReceiver() {

@@ -15,12 +15,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable -Wno-unused-functio
 
 ## Set include paths
 include_directories(deps/boost_1_67_0-install/include)
-include_directories(deps/zeromq-4.0.5-install/include)
+include_directories(deps/zeromq-4.3.4-install/include)
 include_directories(src)
 
 ## Set link library paths
 link_directories(deps/boost_1_67_0-install/lib)
-link_directories(deps/zeromq-4.0.5-install/lib)
+link_directories(deps/zeromq-4.3.4-install/lib)
 
 ## Set boost
 set(BOOST_LIB_DIR "${CMAKE_SOURCE_DIR}/deps/boost_1_67_0-install/lib")
@@ -35,7 +35,7 @@ file(GLOB_RECURSE TRADER_SOURCES
     "src/trader.cpp"
 )
 add_executable(trader ${TRADER_SOURCES})
-target_link_libraries(trader ${CMAKE_SOURCE_DIR}/deps/zeromq-4.0.5-install/lib/libzmq.so ${BOOST_LIBS})
+target_link_libraries(trader ${CMAKE_SOURCE_DIR}/deps/zeromq-4.3.4-install/lib/libzmq.so ${BOOST_LIBS})
 
 file(GLOB_RECURSE EXCHANGE_SOURCES
     "src/common/*.cpp"
@@ -45,7 +45,7 @@ file(GLOB_RECURSE EXCHANGE_SOURCES
     "src/exchange.cpp"
 )
 add_executable(exchange ${EXCHANGE_SOURCES})
-target_link_libraries(exchange ${CMAKE_SOURCE_DIR}/deps/zeromq-4.0.5-install/lib/libzmq.so ${BOOST_LIBS})
+target_link_libraries(exchange ${CMAKE_SOURCE_DIR}/deps/zeromq-4.3.4-install/lib/libzmq.so ${BOOST_LIBS})
 
 # tools: output_diff
 add_executable(

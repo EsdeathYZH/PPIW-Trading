@@ -11,10 +11,13 @@ ExchangeTradeSender::ExchangeTradeSender()
 
     // init msg senders
     for (int i = 0; i < Config::trader_num; i++) {
-        std::vector<std::pair<int, int>> port_pairs;
+        std::pair<int, int> port_pair;
         auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
-        port_pairs.push_back({channels[2].second, channels[2].first});
-        msg_senders_.push_back(std::make_shared<MessageSender>(Config::traders_addr[i], port_pairs));
+        port_pair = {channels[2].second, channels[2].first};
+        msg_senders_.push_back(std::make_shared<MessageSender>(
+            Config::exchanges_addr[Config::partition_idx], 
+            Config::traders_addr[i], 
+            port_pair));
     }
 }
 
@@ -32,12 +35,11 @@ void ExchangeTradeSender::restart() {
 
 void ExchangeTradeSender::reset_network() {
     // reset msg senders
-    msg_senders_.clear();
     for (int i = 0; i < Config::trader_num; i++) {
-        std::vector<std::pair<int, int>> port_pairs;
+        std::pair<int, int> port_pair;
         auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
-        port_pairs.push_back({channels[2].second, channels[2].first});
-        msg_senders_.push_back(std::make_shared<MessageSender>(Config::traders_addr[i], port_pairs));
+        port_pair = {channels[2].second, channels[2].first};
+        msg_senders_[i]->reset_port(port_pair);
     }
     after_reset = true;
 }

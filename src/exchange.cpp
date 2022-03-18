@@ -8,6 +8,7 @@
 #include <signal.h>
 
 #include "common/console.hpp"
+#include "common/monitor.hpp"
 
 #include "exchange/order_receiver.h"
 #include "exchange/trade_sender.h"
@@ -103,6 +104,7 @@ int main(int argc, char *argv[])
     std::cout << "Exchange[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
+    Global<LogBuffer>::New();
     Global<ExchangeOrderReceiver>::New();
     Global<ExchangeTradeSender>::New();
     Global<Exchange>::New();

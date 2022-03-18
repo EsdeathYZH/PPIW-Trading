@@ -57,7 +57,7 @@ class Monitor {
     uint64_t last_time = 0;
     uint64_t last_cnt = 0;
 
-    uint64_t interval = 10 * 1000 * 1000;
+    const uint64_t interval = 10 * 1000 * 1000;
 
    public:
     void start_thpt() {
@@ -83,7 +83,7 @@ class Monitor {
 
         // print separators per second
         if (now - last_separator > interval) {
-            Global<LogBuffer>::Get()->add_log(prefix + " [" + std::to_string((now - start_time) / interval) + "sec]\n");
+            Global<LogBuffer>::Get()->add_log(prefix + " [" + std::to_string((now - start_time) / 1000000) + "sec]\n");
             last_separator = now;
         }
 

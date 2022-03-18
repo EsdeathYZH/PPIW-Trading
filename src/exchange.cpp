@@ -34,6 +34,7 @@ void stop_network() {
 void restart_network() {
   Global<ExchangeOrderReceiver>::Get()->restart();
   Global<ExchangeTradeSender>::Get()->restart();
+  std::cout << "Restart Exchange-" << Config::partition_idx << std::endl;
 }
 
 void reset_network() {

@@ -31,6 +31,7 @@ void stop_network() {
 
 void restart_network() {
   Global<TraderController>::Get()->restart();
+  std::cout << "Restart Trader-" << Config::partition_idx << std::endl;
 }
 
 void reset_network() {

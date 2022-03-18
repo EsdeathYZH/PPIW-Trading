@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <string>
+#include <mutex>
 
 #include "common/global.hpp"
 #include "common/type.hpp"

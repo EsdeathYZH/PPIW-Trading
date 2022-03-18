@@ -10,6 +10,8 @@
 #include <boost/program_options.hpp>
 
 #include "config.h"
+#include "global.hpp"
+#include "monitor.hpp"
 
 #include "utils/errors.hpp"
 #include "utils/logger2.hpp"
@@ -30,6 +32,7 @@ options_description       help_desc("help                display help infomation
 options_description       quit_desc("quit                quit from the console");
 options_description     config_desc("config <args>       run commands for configueration");
 options_description     logger_desc("logger <args>       run commands for logger");
+options_description     check_desc("check <args>       print recent report");
 options_description     stop_desc("stop <args>       stop all communication channels");
 options_description     restart_desc("restart <args>       restart all communication channels");
 options_description     reset_desc("reset-network <args>       reset communication channels");
@@ -64,6 +67,12 @@ void init_options_desc()
     ("help,h", "help message about logger")
     ;
     all_desc.add(logger_desc);
+
+    // e.g., ubiquant> check <args>
+    check_desc.add_options()
+    ("help,h", "help message about check")
+    ;
+    all_desc.add(check_desc);
 
     // e.g., ubiquant> reset-network <args>
     stop_desc.add_options()
@@ -287,6 +296,32 @@ static void run_logger(int argc, char **argv)
     }
 }
 
+/**
+ * run the 'check' command
+ * usage:
+ * check [options]
+ */
+static void run_check(int argc, char **argv)
+{
+    // parse command
+    variables_map check_vm;
+    try {
+        store(parse_command_line(argc, argv, check_desc), check_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(check_vm);
+
+    // parse options
+    if (check_vm.count("help")) {
+        std::cout << check_desc;
+        return;
+    }
+
+    // print reports
+    Global<LogBuffer>::Get()->print_log();
+}
 
 /**
  * run the 'stop' command
@@ -500,11 +535,13 @@ void run_console(std::string console_name)
                 run_logger(argc, argv);
             } else if (cmd_type == "sparql") {  // handle SPARQL queries
                 run_sparql(argc, argv);
-            } else if (cmd_type == "stop") {  // handle SPARQL queries
+            } else if (cmd_type == "check") {  // handle SPARQL queries
+                run_check(argc, argv);
+            } else if (cmd_type == "stop") {  // stop all channels
                 run_stop(argc, argv);
-            } else if (cmd_type == "restart") {  // handle SPARQL queries
+            } else if (cmd_type == "restart") {  // reset all channels
                 run_restart(argc, argv);
-            } else if (cmd_type == "reset-net") {  // handle SPARQL queries
+            } else if (cmd_type == "reset-net") {  // restart all channels
                 run_reset(argc, argv);
             } else {
                 // the same invalid command dispatch to all proxies, print error msg once

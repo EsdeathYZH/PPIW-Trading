@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     Global<ExchangeOrderReceiver>::Get()->start();
     Global<Exchange>::Get()->start();
 
-    run_console();
+    run_console("Exchange["+std::to_string(Config::partition_idx)+"]");
 
     return 0;
 }

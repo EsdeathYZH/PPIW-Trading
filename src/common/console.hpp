@@ -344,7 +344,7 @@ static void run_sparql(int argc, char **argv)
     }
 }
 
-void run_console()
+void run_console(std::string console_name)
 {
     std::cout << std::endl
             << "Input \'help\' command to get more information"
@@ -359,7 +359,7 @@ void run_console()
         // skip input with blank
         size_t pos;
         do {
-            std::cout << "ubiquant> ";
+            std::cout << console_name << "> ";
             std::getline(std::cin, cmd);
             pos = cmd.find_first_not_of(" \t");
         } while (pos == std::string::npos); // if all are blanks, do again

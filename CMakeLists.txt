@@ -35,7 +35,7 @@ file(GLOB_RECURSE TRADER_SOURCES
     "src/trader.cpp"
 )
 add_executable(trader ${TRADER_SOURCES})
-target_link_libraries(trader zmq ${BOOST_LIBS})
+target_link_libraries(trader ${CMAKE_SOURCE_DIR}/deps/zeromq-4.0.5-install/lib/libzmq.so ${BOOST_LIBS})
 
 file(GLOB_RECURSE EXCHANGE_SOURCES
     "src/common/*.cpp"
@@ -45,7 +45,7 @@ file(GLOB_RECURSE EXCHANGE_SOURCES
     "src/exchange.cpp"
 )
 add_executable(exchange ${EXCHANGE_SOURCES})
-target_link_libraries(exchange zmq ${BOOST_LIBS})
+target_link_libraries(exchange ${CMAKE_SOURCE_DIR}/deps/zeromq-4.0.5-install/lib/libzmq.so ${BOOST_LIBS})
 
 # tools: output_diff
 add_executable(

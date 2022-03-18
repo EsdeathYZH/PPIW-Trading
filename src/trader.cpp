@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     Global<TraderController>::Get()->start();
 
-    run_console();
+    run_console("Trader["+std::to_string(Config::partition_idx)+"]");
 
     return 0;
 }

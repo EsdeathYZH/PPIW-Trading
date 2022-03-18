@@ -15,6 +15,8 @@ public:
 
     void run() override;
 
+    volatile bool receiver_running = true;
+
 protected:
     // socket server
     std::shared_ptr<MessageReceiver> msg_receiver_;

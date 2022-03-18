@@ -22,8 +22,8 @@ void ExchangeTradeSender::run() {
     while (true) {
         auto msg = msg_queue_.take();
         for (auto& sender : msg_senders_) {
-            if (!sender->send(msg)) {
-                logstream(LOG_ERROR) << "Message sending error!" << LOG_endl;
+            while (sender_running && !sender->send(msg)) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
 

@@ -18,6 +18,8 @@ public:
 
     void put_order(Order& order);
 
+    volatile bool sender_running = true;
+
 protected:
     int exchange_idx_;
     

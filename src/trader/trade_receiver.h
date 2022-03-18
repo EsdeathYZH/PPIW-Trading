@@ -19,6 +19,8 @@ class TraderTradeReceiver : public ubi_thread {
 
     void run() override;
 
+    volatile bool receiver_running = true;
+
    protected:
     constexpr static int EMPTY_FD = -1;
     constexpr static size_t FILE_TRUNC_SIZE = 1ul << 30;  // 1GB

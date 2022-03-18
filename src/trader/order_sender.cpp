@@ -46,9 +46,8 @@ void TraderOrderSender::run() {
             if (cnt >= 100) break;
         }
         *((uint32_t*)(order_msg.data() + sizeof(uint32_t))) = cnt;
-        if (!msg_sender_->send(order_msg)) {
-            logstream(LOG_ERROR) << "Order sending error!" << LOG_endl;
-            ASSERT(false);
+        while (!msg_sender_->send(order_msg)) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 

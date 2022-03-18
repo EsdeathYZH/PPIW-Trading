@@ -57,7 +57,7 @@ class Monitor {
     uint64_t last_time = 0;
     uint64_t last_cnt = 0;
 
-    const uint64_t interval = 10 * 1000 * 1000;
+    const uint64_t interval = 1 * 1000 * 1000;
 
    public:
     void start_thpt() {

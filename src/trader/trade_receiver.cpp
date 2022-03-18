@@ -9,7 +9,7 @@ namespace ubiquant {
 TraderTradeReceiver::TraderTradeReceiver() {
 
     pthread_spin_init(&recv_lock, 0);
-    
+
     // init stock code (ALL)
     std::vector<int> stk_codes;
     // NOTICE: stock code starts from 1
@@ -42,15 +42,19 @@ TraderTradeReceiver::TraderTradeReceiver() {
 }
 
 void TraderTradeReceiver::stop() {
+    std::cout << "TraderTradeReceiver Lock recv lock" << std::endl;
     pthread_spin_lock(&recv_lock);
+    std::cout << "TraderTradeReceiver Lock recv lock success" << std::endl;
 }
 
 void TraderTradeReceiver::restart() {
+    std::cout << "TraderTradeReceiver unlock recv lock" << std::endl;
     pthread_spin_unlock(&recv_lock);
+    std::cout << "TraderTradeReceiver unlock recv lock success" << std::endl;
 }
 
 void TraderTradeReceiver::reset_network() {
-    // reset msg receiver
+    // // reset msg receiver
     msg_receiver_.reset();
     std::vector<int> ports;
     for (int i = 0; i < Config::exchange_num; i++) {
@@ -82,9 +86,9 @@ void TraderTradeReceiver::run() {
             pthread_spin_lock(&recv_lock);
             res = msg_receiver_->tryrecv(msg);
             pthread_spin_unlock(&recv_lock);
-            if(unlikely(!res)) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+            // if(unlikely(!res)) {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // }
         }
 
         uint32_t msg_code;

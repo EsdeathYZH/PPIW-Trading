@@ -63,7 +63,8 @@ class TraderController : public ubi_thread {
 
     void run() override;
 
-    void stop();
+    void stop_sender();
+    void stop_receiver();
     void restart();
     void reset_network();
 

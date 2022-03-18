@@ -19,11 +19,15 @@ ExchangeTradeSender::ExchangeTradeSender()
 }
 
 void ExchangeTradeSender::stop() {
+    std::cout << "ExchangeTradeSender Lock send lock" << std::endl;
     pthread_spin_lock(&send_lock);
+    std::cout << "ExchangeTradeSender Lock send lock success" << std::endl;
 }
 
 void ExchangeTradeSender::restart() {
+    std::cout << "ExchangeTradeSender Unlock send lock" << std::endl;
     pthread_spin_unlock(&send_lock);
+    std::cout << "ExchangeTradeSender Unlock send lock success" << std::endl;
 }
 
 void ExchangeTradeSender::reset_network() {
@@ -35,6 +39,7 @@ void ExchangeTradeSender::reset_network() {
         port_pairs.push_back({channels[2].second, channels[2].first});
         msg_senders_.push_back(std::make_shared<MessageSender>(Config::traders_addr[i], port_pairs));
     }
+    after_reset = true;
 }
 
 void ExchangeTradeSender::run() {
@@ -49,9 +54,9 @@ void ExchangeTradeSender::run() {
                 pthread_spin_lock(&send_lock);
                 res = msg_senders_[idx]->send(msg);
                 pthread_spin_unlock(&send_lock);
-                if(unlikely(!res)) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
+                // if(unlikely(!res)) {
+                //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                // }
             }
         }
 

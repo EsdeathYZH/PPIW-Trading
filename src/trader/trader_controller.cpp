@@ -34,10 +34,13 @@ TraderController::TraderController()
     init_finished = true;
 }
 
-void TraderController::stop() {
+void TraderController::stop_sender() {
     for (auto& sender : order_senders_) {
         sender->stop();
     }
+}
+
+void TraderController::stop_receiver() {
     trade_receiver_->stop();
 }
 
@@ -49,10 +52,13 @@ void TraderController::restart() {
 }
 
 void TraderController::reset_network() {
+    trade_receiver_->reset_network();
+
     for (auto& sender : order_senders_) {
         sender->reset_network();
     }
-    trade_receiver_->reset_network();
+
+    after_reset = true;
 }
 
 void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {

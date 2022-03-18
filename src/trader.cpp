@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Trader[" << Config::partition_idx << "] is starting..." << std::endl;
     print_config();
 
-
+    Global<LogBuffer>::New();
     Global<TraderController>::New();
 
     Global<TraderController>::Get()->start();

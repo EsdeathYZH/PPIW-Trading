@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 
 #include "common/config.h"
@@ -43,8 +44,16 @@ public:
     }
 
     ~MessageReceiver() {
-        for (auto &r : receivers)
-            if (r.second) delete r.second;
+        for (auto& [port, socket] : receivers) {
+            if (socket) {
+                char address[32] = "";
+                snprintf(address, 32, "tcp://*:%d", port);
+                socket->unbind(address);
+                std::cout << "Unbind from port:" << port << std::endl;
+                delete socket;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     std::string recv() {

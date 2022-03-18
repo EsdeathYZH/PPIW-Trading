@@ -10,6 +10,8 @@
 #include <boost/program_options.hpp>
 
 #include "config.h"
+#include "global.hpp"
+#include "monitor.hpp"
 
 #include "utils/errors.hpp"
 #include "utils/logger2.hpp"
@@ -20,7 +22,8 @@ using namespace boost::program_options;
 namespace ubiquant {
 
 // these functions will be defined in exchange.cpp/trader.cpp
-void stop_network();
+void stop_network_sender();
+void stop_network_receiver();
 void restart_network();
 void reset_network();
 
@@ -30,7 +33,9 @@ options_description       help_desc("help                display help infomation
 options_description       quit_desc("quit                quit from the console");
 options_description     config_desc("config <args>       run commands for configueration");
 options_description     logger_desc("logger <args>       run commands for logger");
-options_description     stop_desc("stop <args>       stop all communication channels");
+options_description     check_desc("check <args>       print recent report");
+options_description     stops_desc("stops <args>       stop all senders");
+options_description     stopr_desc("stopr <args>       stop all receivers");
 options_description     restart_desc("restart <args>       restart all communication channels");
 options_description     reset_desc("reset-network <args>       reset communication channels");
 options_description     sparql_desc("sparql <args>       run SPARQL queries in single or batch mode");
@@ -65,11 +70,23 @@ void init_options_desc()
     ;
     all_desc.add(logger_desc);
 
+    // e.g., ubiquant> check <args>
+    check_desc.add_options()
+    ("help,h", "help message about check")
+    ;
+    all_desc.add(check_desc);
+
     // e.g., ubiquant> reset-network <args>
-    stop_desc.add_options()
+    stops_desc.add_options()
     ("help,h", "help message about stop")
     ;
-    all_desc.add(stop_desc);
+    all_desc.add(stops_desc);
+
+    // e.g., ubiquant> reset-network <args>
+    stopr_desc.add_options()
+    ("help,h", "help message about stop")
+    ;
+    all_desc.add(stopr_desc);
 
     // e.g., ubiquant> reset-network <args>
     restart_desc.add_options()
@@ -287,32 +304,85 @@ static void run_logger(int argc, char **argv)
     }
 }
 
-
 /**
- * run the 'stop' command
+ * run the 'check' command
  * usage:
- * stop [options]
+ * check [options]
  */
-static void run_stop(int argc, char **argv)
+static void run_check(int argc, char **argv)
 {
     // parse command
-    variables_map stop_vm;
+    variables_map check_vm;
     try {
-        store(parse_command_line(argc, argv, stop_desc), stop_vm);
+        store(parse_command_line(argc, argv, check_desc), check_vm);
     } catch (...) {
         fail_to_parse(argc, argv);
         return;
     }
-    notify(stop_vm);
+    notify(check_vm);
 
     // parse options
-    if (stop_vm.count("help")) {
-        std::cout << stop_desc;
+    if (check_vm.count("help")) {
+        std::cout << check_desc;
+        return;
+    }
+
+    // print reports
+    Global<LogBuffer>::Get()->print_log();
+}
+
+/**
+ * run the 'stops' command
+ * usage:
+ * stop [options]
+ */
+static void run_stops(int argc, char **argv)
+{
+    // parse command
+    variables_map stops_vm;
+    try {
+        store(parse_command_line(argc, argv, stops_desc), stops_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(stops_vm);
+
+    // parse options
+    if (stops_vm.count("help")) {
+        std::cout << stops_desc;
         return;
     }
 
     // stop all channels
-    stop_network();
+    stop_network_sender();
+}
+
+/**
+ * run the 'stops' command
+ * usage:
+ * stop [options]
+ */
+static void run_stopr(int argc, char **argv)
+{
+    // parse command
+    variables_map stopr_vm;
+    try {
+        store(parse_command_line(argc, argv, stopr_desc), stopr_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(stopr_vm);
+
+    // parse options
+    if (stopr_vm.count("help")) {
+        std::cout << stopr_desc;
+        return;
+    }
+
+    // stop all channels
+    stop_network_receiver();
 }
 
 /**
@@ -500,11 +570,15 @@ void run_console(std::string console_name)
                 run_logger(argc, argv);
             } else if (cmd_type == "sparql") {  // handle SPARQL queries
                 run_sparql(argc, argv);
-            } else if (cmd_type == "stop") {  // handle SPARQL queries
-                run_stop(argc, argv);
-            } else if (cmd_type == "restart") {  // handle SPARQL queries
+            } else if (cmd_type == "ls") {  // handle SPARQL queries
+                run_check(argc, argv);
+            } else if (cmd_type == "stops") {  // stop all channels
+                run_stops(argc, argv);
+            } else if (cmd_type == "stopr") {  // stop all channels
+                run_stopr(argc, argv);
+            } else if (cmd_type == "restart") {  // reset all channels
                 run_restart(argc, argv);
-            } else if (cmd_type == "reset-net") {  // handle SPARQL queries
+            } else if (cmd_type == "reset-net") {  // restart all channels
                 run_reset(argc, argv);
             } else {
                 // the same invalid command dispatch to all proxies, print error msg once

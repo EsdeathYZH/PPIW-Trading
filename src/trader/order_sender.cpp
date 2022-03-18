@@ -21,11 +21,15 @@ TraderOrderSender::TraderOrderSender(int exchange_idx)
 }
 
 void TraderOrderSender::stop() {
+    std::cout << "TraderOrderSender Lock send lock" << std::endl;
     pthread_spin_lock(&send_lock);
+    std::cout << "TraderOrderSender Lock send lock success" << std::endl;
 }
 
 void TraderOrderSender::restart() {
+    std::cout << "TraderOrderSender Unlock send lock" << std::endl;
     pthread_spin_unlock(&send_lock);
+    std::cout << "TraderOrderSender Unlock send lock success" << std::endl;
 }
 
 void TraderOrderSender::reset_network() {
@@ -74,9 +78,9 @@ void TraderOrderSender::run() {
             pthread_spin_lock(&send_lock);
             res = msg_sender_->send(order_msg);
             pthread_spin_unlock(&send_lock);
-            if(unlikely(!res)) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+            // if(unlikely(!res)) {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // }
         }
     }
 

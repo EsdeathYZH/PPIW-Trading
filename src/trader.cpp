@@ -20,21 +20,30 @@
 namespace ubiquant {
 
 volatile bool work_flag = true;
+volatile bool after_reset = false;
 
 inline bool at_work() { return work_flag; }
 
 inline void finish_work() { work_flag = false; }
 
-void stop_network() {
-  Global<TraderController>::Get()->stop();
+void stop_network_sender() {
+  Global<TraderController>::Get()->stop_sender();
+  std::cout << "Stop Trader-Senders-" << Config::partition_idx << std::endl;
+}
+
+void stop_network_receiver() {
+  Global<TraderController>::Get()->stop_receiver();
+  std::cout << "Stop Trader-Receivers-" << Config::partition_idx << std::endl;
 }
 
 void restart_network() {
   Global<TraderController>::Get()->restart();
+  std::cout << "Restart Trader-" << Config::partition_idx << std::endl;
 }
 
 void reset_network() {
   Global<TraderController>::Get()->reset_network();
+  std::cout << "Reset Trader-" << Config::partition_idx << std::endl;
 }
 
 }

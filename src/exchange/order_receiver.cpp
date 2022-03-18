@@ -19,11 +19,15 @@ ExchangeOrderReceiver::ExchangeOrderReceiver() {
 }
 
 void ExchangeOrderReceiver::stop() {
+    std::cout << "ExchangeOrderReceiver Lock recv lock" << std::endl;
     pthread_spin_lock(&recv_lock);
+    std::cout << "ExchangeOrderReceiver Lock recv lock success" << std::endl;
 }
 
 void ExchangeOrderReceiver::restart() {
+    std::cout << "ExchangeOrderReceiver unlock recv lock" << std::endl;
     pthread_spin_unlock(&recv_lock);
+    std::cout << "ExchangeOrderReceiver unlock recv lock success" << std::endl;
 }
 
 void ExchangeOrderReceiver::reset_network() {
@@ -48,9 +52,9 @@ void ExchangeOrderReceiver::run() {
             pthread_spin_lock(&recv_lock);
             res = msg_receiver_->tryrecv(msg);
             pthread_spin_unlock(&recv_lock);
-            if(unlikely(!res)) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+            // if(unlikely(!res)) {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // }
         }
 
         // deserialize orders

@@ -20,6 +20,8 @@
 
 namespace ubiquant {
 
+extern volatile bool after_reset;
+
 class MessageSender {
 private:
     zmq::context_t context;
@@ -75,17 +77,18 @@ public:
             char address[32] = "";
             snprintf(address, 32, "tcp://%s:%d", addr.c_str(), channels[0].second);
             senders[channels[0].second] = new zmq::socket_t(context, ZMQ_PUSH);
+            std::cout << "Tring to Connect to " << address << std::endl;
             senders[channels[0].second]->connect(address);
             std::cout << "Connect to " << address << std::endl;
         }
 
         // TODO: use two channels
         bool result = senders[channels[0].second]->send(msg);
-        if (!result) {
-            logstream(LOG_INFO) << "failed to send msg to ["
-                                 << addr << ":" << channels[0].second << "] "
-                                 << strerror(errno) << LOG_endl;
-        }
+        // if (!result) {
+        //     logstream(LOG_INFO) << "failed to send msg to ["
+        //                          << addr << ":" << channels[0].second << "] "
+        //                          << strerror(errno) << LOG_endl;
+        // }
 
         pthread_spin_unlock(&send_locks[0]);
 

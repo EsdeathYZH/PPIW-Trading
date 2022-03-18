@@ -20,25 +20,33 @@
 namespace ubiquant {
 
 volatile bool work_flag = true;
+volatile bool after_reset = false;
 
 inline bool at_work() { return work_flag; }
 
 inline void finish_work() { work_flag = false; }
 
 
-void stop_network() {
-  Global<ExchangeOrderReceiver>::Get()->stop();
+void stop_network_sender() {
   Global<ExchangeTradeSender>::Get()->stop();
+  std::cout << "Stop Exchange-Senders-" << Config::partition_idx << std::endl;
+}
+
+void stop_network_receiver() {
+  Global<ExchangeOrderReceiver>::Get()->stop();
+  std::cout << "Stop Exchange-Receivers-" << Config::partition_idx << std::endl;
 }
 
 void restart_network() {
   Global<ExchangeOrderReceiver>::Get()->restart();
   Global<ExchangeTradeSender>::Get()->restart();
+  std::cout << "Restart Exchange-" << Config::partition_idx << std::endl;
 }
 
 void reset_network() {
   Global<ExchangeOrderReceiver>::Get()->reset_network();
   Global<ExchangeTradeSender>::Get()->reset_network();
+  std::cout << "Reset Exchange-" << Config::partition_idx << std::endl;
 }
 
 }

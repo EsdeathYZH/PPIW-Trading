@@ -19,7 +19,9 @@ class TraderTradeReceiver : public ubi_thread {
 
     void run() override;
 
-    volatile bool receiver_running = true;
+    void stop();
+    void restart();
+    void reset_network();
 
    protected:
     constexpr static int EMPTY_FD = -1;
@@ -38,6 +40,9 @@ class TraderTradeReceiver : public ubi_thread {
     std::unordered_map<int, int> trade_idxs_;
 
     Monitor monitor;
+
+    // receiver pause lock
+    pthread_spinlock_t recv_lock;
 };
 
 }  // namespace ubiquant

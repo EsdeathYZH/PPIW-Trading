@@ -15,11 +15,16 @@ public:
 
     void run() override;
 
-    volatile bool receiver_running = true;
+    void stop();
+    void restart();
+    void reset_network();
 
 protected:
     // socket server
     std::shared_ptr<MessageReceiver> msg_receiver_;
+
+    // receiver pause lock
+    pthread_spinlock_t recv_lock;
 };
 
 }  // namespace ubiquant

@@ -6,7 +6,29 @@ namespace ubiquant {
 
 ExchangeTradeSender::ExchangeTradeSender()
     : msg_queue_(Config::sliding_window_size * Config::stock_num / 2) {
+
+    pthread_spin_init(&send_lock, 0);
+
     // init msg senders
+    for (int i = 0; i < Config::trader_num; i++) {
+        std::vector<std::pair<int, int>> port_pairs;
+        auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
+        port_pairs.push_back({channels[2].second, channels[2].first});
+        msg_senders_.push_back(std::make_shared<MessageSender>(Config::traders_addr[i], port_pairs));
+    }
+}
+
+void ExchangeTradeSender::stop() {
+    pthread_spin_lock(&send_lock);
+}
+
+void ExchangeTradeSender::restart() {
+    pthread_spin_unlock(&send_lock);
+}
+
+void ExchangeTradeSender::reset_network() {
+    // reset msg senders
+    msg_senders_.clear();
     for (int i = 0; i < Config::trader_num; i++) {
         std::vector<std::pair<int, int>> port_pairs;
         auto& channels = Config::trader_port2exchange_port[i][Config::partition_idx];
@@ -21,9 +43,15 @@ void ExchangeTradeSender::run() {
     // monitor.start_thpt();
     while (true) {
         auto msg = msg_queue_.take();
-        for (auto& sender : msg_senders_) {
-            while (sender_running && !sender->send(msg)) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        for (int idx = 0; idx < msg_senders_.size(); idx++) {
+            bool res = false;
+            while (!res) {
+                pthread_spin_lock(&send_lock);
+                res = msg_senders_[idx]->send(msg);
+                pthread_spin_unlock(&send_lock);
+                if(unlikely(!res)) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
             }
         }
 

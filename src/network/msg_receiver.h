@@ -26,6 +26,8 @@ private:
     std::vector<int> ports;
     std::unordered_map<int, zmq::socket_t*> receivers;     // static allocation
 
+    int offset = 0;
+
 public:
     MessageReceiver(std::vector<int> receiver_ports)
         : context(1), ports(receiver_ports) {
@@ -47,14 +49,24 @@ public:
 
     std::string recv() {
         std::string msg;
-        int idx = 0;
         // poll all recv ports
         while(true) {
-            if (tryrecv(idx, msg)) {
+            if (tryrecv(offset, msg)) {
                 return msg;
             }
-            idx = (idx + 1) % ports.size();
+            offset = (offset + 1) % ports.size();
         }
+    }
+
+    bool tryrecv(std::string &str) {
+        // poll all recv ports
+        for(int idx = 0; idx < ports.size(); idx++) {
+            if (tryrecv((idx+offset) % ports.size(), str)) {
+                return true;
+            }
+        }
+        offset = (offset + 1) % ports.size();
+        return false;
     }
 
 

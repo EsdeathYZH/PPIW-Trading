@@ -25,6 +25,18 @@ inline bool at_work() { return work_flag; }
 
 inline void finish_work() { work_flag = false; }
 
+void stop_network() {
+  Global<TraderController>::Get()->stop();
+}
+
+void restart_network() {
+  Global<TraderController>::Get()->restart();
+}
+
+void reset_network() {
+  Global<TraderController>::Get()->reset_network();
+}
+
 }
 
 namespace {

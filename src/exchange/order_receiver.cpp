@@ -6,7 +6,29 @@
 namespace ubiquant {
 
 ExchangeOrderReceiver::ExchangeOrderReceiver() {
+
+    pthread_spin_init(&recv_lock, 0);
+
     // init msg receivers
+    std::vector<int> ports;
+    for (int i = 0; i < Config::trader_num; i++) {
+        ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][0].second);
+        ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][1].second);
+    }
+    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
+}
+
+void ExchangeOrderReceiver::stop() {
+    pthread_spin_lock(&recv_lock);
+}
+
+void ExchangeOrderReceiver::restart() {
+    pthread_spin_unlock(&recv_lock);
+}
+
+void ExchangeOrderReceiver::reset_network() {
+    // reset msg receivers
+    msg_receiver_.reset();
     std::vector<int> ports;
     for (int i = 0; i < Config::trader_num; i++) {
         ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][0].second);
@@ -20,7 +42,17 @@ void ExchangeOrderReceiver::run() {
     Monitor monitor;
     monitor.start_thpt();
     while (true) {
-        std::string msg = msg_receiver_->recv();
+        std::string msg;
+        bool res = false;
+        while (!res) {
+            pthread_spin_lock(&recv_lock);
+            res = msg_receiver_->tryrecv(msg);
+            pthread_spin_unlock(&recv_lock);
+            if(unlikely(!res)) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
+
         // deserialize orders
         size_t offset = 0;
         uint32_t msg_code = 0;

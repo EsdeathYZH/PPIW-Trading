@@ -19,7 +19,9 @@ public:
 
     void put_order_ack(OrderAck& ack);
 
-    volatile bool sender_running = true;
+    void stop();
+    void restart();
+    void reset_network();
 
 protected:
     // socket client
@@ -27,6 +29,9 @@ protected:
 
     // msg queue
     BlockQueue<std::string> msg_queue_;
+
+    // sender pause lock
+    pthread_spinlock_t send_lock;
 };
 
 }  // namespace ubiquant

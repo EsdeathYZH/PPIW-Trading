@@ -166,7 +166,12 @@ static void load_network_config(std::string fname)
         exit(0);
     }
 
-    // hard code
+    // clear previous config
+    Config::traders_addr.clear();
+    Config::exchanges_addr.clear();
+    Config::trader_port2exchange_port.clear();
+
+    // load new config
     Config::traders_addr.resize(2);
     Config::exchanges_addr.resize(2);
     Config::trader_port2exchange_port.resize(2, std::vector<std::vector<std::pair<int, int>>>(2));

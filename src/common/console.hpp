@@ -19,12 +19,20 @@ using namespace boost::program_options;
 
 namespace ubiquant {
 
+// these functions will be defined in exchange.cpp/trader.cpp
+void stop_network();
+void restart_network();
+void reset_network();
+
 // options
 options_description        all_desc("These are common exchange commands: ");
 options_description       help_desc("help                display help infomation");
 options_description       quit_desc("quit                quit from the console");
 options_description     config_desc("config <args>       run commands for configueration");
 options_description     logger_desc("logger <args>       run commands for logger");
+options_description     stop_desc("stop <args>       stop all communication channels");
+options_description     restart_desc("restart <args>       restart all communication channels");
+options_description     reset_desc("reset-network <args>       reset communication channels");
 options_description     sparql_desc("sparql <args>       run SPARQL queries in single or batch mode");
 
 /*
@@ -56,6 +64,24 @@ void init_options_desc()
     ("help,h", "help message about logger")
     ;
     all_desc.add(logger_desc);
+
+    // e.g., ubiquant> reset-network <args>
+    stop_desc.add_options()
+    ("help,h", "help message about stop")
+    ;
+    all_desc.add(stop_desc);
+
+    // e.g., ubiquant> reset-network <args>
+    restart_desc.add_options()
+    ("help,h", "help message about restart")
+    ;
+    all_desc.add(restart_desc);
+
+    // e.g., ubiquant> reset-network <args>
+    reset_desc.add_options()
+    ("help,h", "help message about logger")
+    ;
+    all_desc.add(reset_desc);
 
     // e.g., ubiquant> sparql <args>
     sparql_desc.add_options()
@@ -261,6 +287,91 @@ static void run_logger(int argc, char **argv)
     }
 }
 
+
+/**
+ * run the 'stop' command
+ * usage:
+ * stop [options]
+ */
+static void run_stop(int argc, char **argv)
+{
+    // parse command
+    variables_map stop_vm;
+    try {
+        store(parse_command_line(argc, argv, stop_desc), stop_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(stop_vm);
+
+    // parse options
+    if (stop_vm.count("help")) {
+        std::cout << stop_desc;
+        return;
+    }
+
+    // stop all channels
+    stop_network();
+}
+
+/**
+ * run the 'restart' command
+ * usage:
+ * restart [options]
+ */
+static void run_restart(int argc, char **argv)
+{
+    // parse command
+    variables_map restart_vm;
+    try {
+        store(parse_command_line(argc, argv, restart_desc), restart_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(restart_vm);
+
+    // parse options
+    if (restart_vm.count("help")) {
+        std::cout << restart_desc;
+        return;
+    }
+
+    // restart all channels
+    restart_network();
+}
+
+/**
+ * run the 'reset-network' command
+ * usage:
+ * restart [options]
+ */
+static void run_reset(int argc, char **argv)
+{
+    // parse command
+    variables_map reset_vm;
+    try {
+        store(parse_command_line(argc, argv, reset_desc), reset_vm);
+    } catch (...) {
+        fail_to_parse(argc, argv);
+        return;
+    }
+    notify(reset_vm);
+
+    // parse options
+    if (reset_vm.count("help")) {
+        std::cout << restart_desc;
+        return;
+    }
+
+    // reload network config file for all channels
+    load_network_config(Config::network_config_file);
+
+    // reset all msg_sender/receiver
+    reset_network();
+}
+
 /**
  * run the 'sparql' command
  * usage:
@@ -389,6 +500,12 @@ void run_console(std::string console_name)
                 run_logger(argc, argv);
             } else if (cmd_type == "sparql") {  // handle SPARQL queries
                 run_sparql(argc, argv);
+            } else if (cmd_type == "stop") {  // handle SPARQL queries
+                run_stop(argc, argv);
+            } else if (cmd_type == "restart") {  // handle SPARQL queries
+                run_restart(argc, argv);
+            } else if (cmd_type == "reset-net") {  // handle SPARQL queries
+                run_reset(argc, argv);
             } else {
                 // the same invalid command dispatch to all proxies, print error msg once
                 fail_to_parse(argc, argv);

@@ -18,7 +18,9 @@ public:
 
     void put_order(Order& order);
 
-    volatile bool sender_running = true;
+    void stop();
+    void restart();
+    void reset_network();
 
 protected:
     int exchange_idx_;
@@ -28,6 +30,9 @@ protected:
 
     // order queue
     BlockQueue<Order> order_queue_;
+
+    // sender pause lock
+    pthread_spinlock_t send_lock;
 };
 
 }  // namespace ubiquant

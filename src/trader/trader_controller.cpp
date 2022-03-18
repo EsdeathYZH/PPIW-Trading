@@ -34,6 +34,27 @@ TraderController::TraderController()
     init_finished = true;
 }
 
+void TraderController::stop() {
+    for (auto& sender : order_senders_) {
+        sender->stop();
+    }
+    trade_receiver_->stop();
+}
+
+void TraderController::restart() {
+    for (auto& sender : order_senders_) {
+        sender->restart();
+    }
+    trade_receiver_->restart();
+}
+
+void TraderController::reset_network() {
+    for (auto& sender : order_senders_) {
+        sender->reset_network();
+    }
+    trade_receiver_->reset_network();
+}
+
 void TraderController::update_sliding_window_start(const stock_code_t stock_code, const order_id_t new_sliding_window_start) {
     sharedInfo->update_sliding_window_start(stock_code, new_sliding_window_start);
 }

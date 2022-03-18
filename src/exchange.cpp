@@ -24,6 +24,22 @@ inline bool at_work() { return work_flag; }
 
 inline void finish_work() { work_flag = false; }
 
+
+void stop_network() {
+  Global<ExchangeOrderReceiver>::Get()->stop();
+  Global<ExchangeTradeSender>::Get()->stop();
+}
+
+void restart_network() {
+  Global<ExchangeOrderReceiver>::Get()->restart();
+  Global<ExchangeTradeSender>::Get()->restart();
+}
+
+void reset_network() {
+  Global<ExchangeOrderReceiver>::Get()->reset_network();
+  Global<ExchangeTradeSender>::Get()->reset_network();
+}
+
 }
 
 namespace {

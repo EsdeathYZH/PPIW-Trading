@@ -63,6 +63,10 @@ class TraderController : public ubi_thread {
 
     void run() override;
 
+    void stop();
+    void restart();
+    void reset_network();
+
     void run_all_in_memory();
 
     bool check_order(Order& order, order_id_t order_id_upper_limits, stock_code_t stk_code_minus_one);

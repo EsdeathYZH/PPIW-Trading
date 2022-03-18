@@ -71,11 +71,11 @@ int main(int argc, char *argv[]) {
     /* parse command arguments */
     std::string config_file;
     if (argc != 4) {
-        std::cout << "Usage: ./trader partition_idx config_file has_cache_file" << std::endl;
+        std::cout << "Usage: ./trader partition_idx config_file load_mode" << std::endl;
         return 0;
     } else {
         Config::partition_idx = std::stoi(std::string(argv[1]));
-        Config::have_cache_file = std::stoi(std::string(argv[3]));
+        Config::load_mode = std::stoi(std::string(argv[3]));
         ASSERT_MSG(Config::partition_idx == 0 
                 || Config::partition_idx == 1, 
                     "partition_idx can only be 0 or 1!");

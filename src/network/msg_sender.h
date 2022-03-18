@@ -76,6 +76,7 @@ public:
             snprintf(address, 32, "tcp://%s:%d", addr.c_str(), channels[0].second);
             senders[channels[0].second] = new zmq::socket_t(context, ZMQ_PUSH);
             senders[channels[0].second]->connect(address);
+            std::cout << "Connect to " << address << std::endl;
         }
 
         // TODO: use two channels

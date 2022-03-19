@@ -84,7 +84,7 @@ public:
         }
 
         // TODO: use two channels
-        bool result = sender->send(msg);
+        bool result = sender->send(msg, ZMQ_DONTWAIT);
         // if (!result) {
         //     logstream(LOG_INFO) << "failed to send msg to ["
         //                          << dst_addr << ":" << channels[0].second << "] "

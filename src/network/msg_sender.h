@@ -42,9 +42,9 @@ public:
     }
 
     ~MessageSender() {
-        if (sender) {
-            delete sender;
-        }
+        // if (sender) {
+        //     delete sender;
+        // }
     }
 
     void reset_port(std::pair<int, int> port_pair) {

@@ -46,18 +46,18 @@ public:
     }
 
     ~MessageReceiver() {
-        for(int idx = 0; idx < receivers.size(); idx++) {
-            auto port = ports[idx];
-            auto& socket = receivers[idx];
-            if (socket) {
-                char address[32] = "";
-                snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), port);
-                socket->unbind(address);
-                std::cout << "Unbind from address:" << address << std::endl;
-                delete socket;
-            }
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // for(int idx = 0; idx < receivers.size(); idx++) {
+        //     auto port = ports[idx];
+        //     auto& socket = receivers[idx];
+        //     if (socket) {
+        //         char address[32] = "";
+        //         snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), port);
+        //         socket->unbind(address);
+        //         std::cout << "Unbind from address:" << address << std::endl;
+        //         delete socket;
+        //     }
+        // }
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     void reset_port(std::vector<int> new_ports) {

@@ -12,12 +12,14 @@ TraderOrderSender::TraderOrderSender(int exchange_idx)
     pthread_spin_init(&send_lock, 0);
 
     // init msg sender
-    std::vector<std::pair<int, int>> port_pairs;
+    std::pair<int, int> port_pair;
     auto& channels = Config::trader_port2exchange_port[Config::partition_idx][exchange_idx_];
-    // we use the first two channels
-    port_pairs.push_back(channels[0]);
-    port_pairs.push_back(channels[1]);
-    msg_sender_ = std::make_shared<MessageSender>(Config::exchanges_addr[exchange_idx_], port_pairs);
+    // NOTICE: we only use the first channel
+    port_pair = channels[0];
+    msg_sender_ = std::make_shared<MessageSender>(
+        Config::traders_addr[Config::partition_idx], 
+        Config::exchanges_addr[exchange_idx_], 
+        port_pair);
 }
 
 void TraderOrderSender::stop() {
@@ -34,13 +36,11 @@ void TraderOrderSender::restart() {
 
 void TraderOrderSender::reset_network() {
     // reset msg sender
-    msg_sender_.reset();
-    std::vector<std::pair<int, int>> port_pairs;
+    std::pair<int, int> port_pair;
     auto& channels = Config::trader_port2exchange_port[Config::partition_idx][exchange_idx_];
-    // we use the first two channels
-    port_pairs.push_back(channels[0]);
-    port_pairs.push_back(channels[1]);
-    msg_sender_ = std::make_shared<MessageSender>(Config::exchanges_addr[exchange_idx_], port_pairs);
+    // NOTICE: we only use the first channel
+    port_pair = channels[0];
+    msg_sender_->reset_port(port_pair);
 }
 
 void TraderOrderSender::run() {

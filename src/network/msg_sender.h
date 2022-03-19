@@ -25,72 +25,71 @@ extern volatile bool after_reset;
 class MessageSender {
 private:
     zmq::context_t context;
-    std::string addr;
-    std::vector<std::pair<int, int>> channels;
-    std::unordered_map<int, zmq::socket_t*> senders;
+    std::string src_addr;
+    std::string dst_addr;
+    std::pair<int, int> channel;
+    zmq::socket_t* sender;
 
     pthread_spinlock_t *send_locks;
 
+    bool connected = false;
+
 public:
-    MessageSender(std::string receiver_addr, std::vector<std::pair<int, int>> port_pairs) 
-        : context(1), addr(receiver_addr), channels(port_pairs) {
-        
-        send_locks = (pthread_spinlock_t *)malloc(sizeof(pthread_spinlock_t) * channels.size());
-        for (int i = 0; i < channels.size(); i++)
-            pthread_spin_init(&send_locks[i], 0);
-        
-        // set send socket
-        // for(auto [src_port, dst_port] : channels) {
-        //     // new socket on-demand
-        //     char address[32] = "";
-        //     snprintf(address, 32, "tcp://%s:%d", receiver_addr.c_str(), dst_port);
-        //     senders[dst_port] = new zmq::socket_t(context, ZMQ_PUSH);
-        //     while(true) {
-        //         senders[dst_port]->connect(address);
-        //         if (errno == EAGAIN) {
-        //             std::this_thread::sleep_for(std::chrono::seconds(3));
-        //             std::cout << "Try to connect to " << receiver_addr << ":" << dst_port << " ..." << std::endl;
-        //             continue;
-        //         } else {
-        //             break;
-        //         }
-        //     }
-        //     std::cout << "Connect to " << receiver_addr << ":" << dst_port << " successfully!" << std::endl;
-        // }
+    MessageSender(std::string my_addr, std::string receiver_addr, std::pair<int, int> port_pair) 
+        : context(1), src_addr(my_addr), dst_addr(receiver_addr), channel(port_pair) {
+        // new socket
+        sender = new zmq::socket_t(context, ZMQ_PUSH);
     }
 
     ~MessageSender() {
-        for (auto &s : senders) {
-            if (s.second) {
-                delete s.second;
-            }
+        if (sender) {
+            delete sender;
         }
+    }
+
+    void reset_port(std::pair<int, int> port_pair) {
+        char address[64] = "";
+        //snprintf(address, 32, "tcp://%s:%d", dst_addr.c_str(), channel.second);
+        snprintf(address, 64, "tcp://%s:%d;%s:%d", 
+                 src_addr.c_str(), 
+                 channel.first, 
+                 dst_addr.c_str(), 
+                 channel.second);
+        sender->disconnect(address);
+
+        connected = false;
+
+        // set new channel
+        channel = port_pair;
     }
 
     bool send(const std::string &str) {
         zmq::message_t msg(str.length());
         memcpy((void *)msg.data(), str.c_str(), str.length());
 
-        pthread_spin_lock(&send_locks[0]);
-        if (senders.find(channels[0].second) == senders.end()) {
-            // new socket on-demand
-            char address[32] = "";
-            snprintf(address, 32, "tcp://%s:%d", addr.c_str(), channels[0].second);
-            senders[channels[0].second] = new zmq::socket_t(context, ZMQ_PUSH);
+        if (!connected) {
+            // connect on-demand
+            char address[64] = "";
+            //snprintf(address, 32, "tcp://%s:%d", dst_addr.c_str(), channel.second);
+            snprintf(address, 64, "tcp://%s:%d;%s:%d", 
+                 src_addr.c_str(), 
+                 channel.first, 
+                 dst_addr.c_str(), 
+                 channel.second);
             std::cout << "Tring to Connect to " << address << std::endl;
-            senders[channels[0].second]->connect(address);
+            sender->connect(address);
             std::cout << "Connect to " << address << std::endl;
+
+            connected = true;
         }
 
         // TODO: use two channels
-        bool result = senders[channels[0].second]->send(msg);
+        bool result = sender->send(msg, ZMQ_DONTWAIT);
         // if (!result) {
         //     logstream(LOG_INFO) << "failed to send msg to ["
-        //                          << addr << ":" << channels[0].second << "] "
+        //                          << dst_addr << ":" << channels[0].second << "] "
         //                          << strerror(errno) << LOG_endl;
         // }
-
-        pthread_spin_unlock(&send_locks[0]);
 
         return result;
     }

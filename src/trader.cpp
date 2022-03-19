@@ -46,6 +46,11 @@ void reset_network() {
   std::cout << "Reset Trader-" << Config::partition_idx << std::endl;
 }
 
+void exit_system() {
+  Global<LogBuffer>::Delete();
+  Global<TraderController>::Delete();
+}
+
 }
 
 namespace {
@@ -61,6 +66,7 @@ void sigsegv_handler(int sig) {
   fprintf(stderr, "[Trader] Meet a segmentation fault!\n");
   // printTraceExit(sig);
   ubiquant::work_flag = false;
+  ubiquant::exit_system();
   exit(-1);
 }
 
@@ -69,6 +75,7 @@ void sigint_handler(int sig) {
   fprintf(stderr, "[Trader] Meet an interrupt!\n");
   // printTraceExit(sig);
   ubiquant::work_flag = false;
+  ubiquant::exit_system();
   exit(-1);
 }
 
@@ -76,6 +83,7 @@ void sigabrt_handler(int sig) {
   std::lock_guard<std::mutex> lock(exit_lock);
   fprintf(stderr, "[Trader] Meet an assertion failure!\n");
   printTraceExit(sig);
+  ubiquant::exit_system();
   exit(-1);
 }
 

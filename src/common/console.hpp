@@ -26,6 +26,7 @@ void stop_network_sender();
 void stop_network_receiver();
 void restart_network();
 void reset_network();
+void exit_system();
 
 // options
 options_description        all_desc("These are common exchange commands: ");
@@ -563,6 +564,7 @@ void run_console(std::string console_name)
             if (cmd_type == "help" || cmd_type == "h") {
                 print_help();
             } else if (cmd_type == "quit" || cmd_type == "q") {
+                exit_system();
                 exit(0);
             } else if (cmd_type == "config") {
                 run_config(argc, argv);

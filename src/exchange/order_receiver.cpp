@@ -15,7 +15,7 @@ ExchangeOrderReceiver::ExchangeOrderReceiver() {
         ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][0].second);
         ports.push_back(Config::trader_port2exchange_port[i][Config::partition_idx][1].second);
     }
-    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
+    msg_receiver_ = std::make_shared<MessageReceiver>(Config::exchanges_addr[Config::partition_idx], ports);
 }
 
 void ExchangeOrderReceiver::stop() {

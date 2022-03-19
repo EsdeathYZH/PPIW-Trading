@@ -24,19 +24,21 @@ namespace ubiquant {
 class MessageReceiver {
 private:
     zmq::context_t context;
+    std::string src_addr;
     std::vector<int> ports;
     std::vector<zmq::socket_t*> receivers;     // static allocation
 
     int offset = 0;
 
 public:
-    MessageReceiver(std::vector<int> receiver_ports)
-        : context(1), ports(receiver_ports) {
+    MessageReceiver(std::string my_addr, std::vector<int> receiver_ports)
+        : context(1), src_addr(my_addr), ports(receiver_ports) {
 
         for (auto port : receiver_ports) {
             auto socket = new zmq::socket_t(context, ZMQ_PULL);
             char address[32] = "";
-            snprintf(address, 32, "tcp://*:%d", port);
+            snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), port);
+            std::cout << "Try to bind on:" << address << std::endl;
             socket->bind(address);
             std::cout << "Bind on address:" << address << std::endl;
             receivers.push_back(socket);
@@ -49,7 +51,7 @@ public:
             auto& socket = receivers[idx];
             if (socket) {
                 char address[32] = "";
-                snprintf(address, 32, "tcp://*:%d", port);
+                snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), port);
                 socket->unbind(address);
                 std::cout << "Unbind from address:" << address << std::endl;
                 delete socket;
@@ -65,7 +67,7 @@ public:
             auto& socket = receivers[idx];
             if (socket) {
                 char address[32] = "";
-                snprintf(address, 32, "tcp://*:%d", port);
+                snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), port);
                 socket->unbind(address);
                 std::cout << "Unbind from address:" << address << std::endl;
             }
@@ -78,7 +80,7 @@ public:
             auto& socket = receivers[idx];
             if (socket) {
                 char address[32] = "";
-                snprintf(address, 32, "tcp://*:%d", new_port);
+                snprintf(address, 32, "tcp://%s:%d", src_addr.c_str(), new_port);
                 socket->bind(address);
                 std::cout << "Bind on address:" << address << std::endl;
             }

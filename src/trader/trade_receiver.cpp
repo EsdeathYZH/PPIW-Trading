@@ -38,7 +38,7 @@ TraderTradeReceiver::TraderTradeReceiver() {
     for (int i = 0; i < Config::exchange_num; i++) {
         ports.push_back(Config::trader_port2exchange_port[Config::partition_idx][i][2].first);
     }
-    msg_receiver_ = std::make_shared<MessageReceiver>(ports);
+    msg_receiver_ = std::make_shared<MessageReceiver>(Config::traders_addr[Config::partition_idx], ports);
 }
 
 void TraderTradeReceiver::stop() {
